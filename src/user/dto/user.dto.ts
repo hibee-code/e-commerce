@@ -39,3 +39,7 @@ export class UserSignInDto {
   @IsString()
   password: string;
 }
+
+//
+
+export class CreateUserDto {}

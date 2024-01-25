@@ -1,4 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
+import Hashids from 'hashids';
+import { get, isEmpty } from 'lodash';
 
 export function createObject<T>(propsValues?: Partial<T>): T {
   const objectTypeBluePrint = getConstructor(propsValues);
@@ -27,22 +29,22 @@ export function trimObject(
   }, propsValues);
 }
 
-// export const encoder = new Hashids(process.env.APP_KEY, 6, '0123456789BCDGTN');
-// export const encodeId = (id: string): string => {
-//   return encoder.encode(id);
-// };
+export const encoder = new Hashids(process.env.APP_KEY, 6, '0123456789BCDGTN');
+export const encodeId = (id: string): string => {
+  return encoder.encode(id);
+};
 
-// export const decodeId = (hash: string): string | false => {
-//   try {
-//     const data = encoder.decode(hash);
-//     if (!data || isEmpty(data) || get(data, '0', 'undefined') === 'undefined')
-//       return false;
+export const decodeId = (hash: string): string | false => {
+  try {
+    const data = encoder.decode(hash);
+    if (!data || isEmpty(data) || get(data, '0', 'undefined') === 'undefined')
+      return false;
 
-//     return String(data[0]);
-//   } catch {
-//     return false;
-//   }
-// };
+    return String(data[0]);
+  } catch {
+    return false;
+  }
+};
 
 export const throwBadRequest = (message: string) => {
   throw new HttpException(message, HttpStatus.BAD_REQUEST);

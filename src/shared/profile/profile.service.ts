@@ -1,5 +1,5 @@
-import { ProfileTypes } from '@/src/lib/enums';
-import { ProfileCollection } from '@/src/utils-billing/entitties/profileCollection.entity';
+import { ProfileTypes } from '../../lib/enums';
+import { ProfileCollection } from '../../utils-billing/entitties/profileCollection.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 

@@ -20,7 +20,10 @@ import { AppService } from './app.service';
 import { ExtractTokenMiddleWare } from './shared/extractToken.middleware';
 import { AuthModule } from './auth/auth.module';
 import { SharedModule } from './shared/shared.module';
-import { UtilsBillingModule } from './utils-billing/utils-billing.module';
+import { SharedService } from './shared/shared.service';
+//import { UtilsBillingModule } from './utils-billing/utils-billing.module';
+import { UserModule } from './user/user.module';
+import { TokenService } from './auth/token/token.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
@@ -104,15 +107,18 @@ const validator = new ValidationPipe({
       },
       inject: [ConfigService],
     }),
-    AuthModule,
+    // AuthModule,
     SharedModule,
-    UtilsBillingModule,
+    UserModule,
+    TokenService,
+    //UtilsBillingModule,
   ],
   providers: [
     {
       provide: APP_PIPE,
       useValue: validator,
     },
+    SharedService,
     JwtService,
     AppService,
   ],

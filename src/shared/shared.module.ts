@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { SharedService } from './shared.service';
+//import { SharedService } from './shared.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
-import { RequestService } from './request/request.service';
-import { HelpersService } from './helpers/helpers.service';
-import { ProfileService } from './profile/profile.service';
+//import { RequestService } from './request/request.service';
+//import { HelpersService } from './helpers/helpers.service';
+//import { ProfileService } from './profile/profile.service';
 import { HttpModule } from '@nestjs/axios';
 @Module({
   imports: [
@@ -24,19 +24,7 @@ import { HttpModule } from '@nestjs/axios';
     }),
     HttpModule,
   ],
-  providers: [
-    SharedService,
-    JwtService,
-    RequestService,
-    HelpersService,
-    ProfileService,
-  ],
-  exports: [
-    SharedService,
-    JwtService,
-    HelpersService,
-    ProfileService,
-    RequestService,
-  ],
+  providers: [JwtService],
+  exports: [JwtService],
 })
 export class SharedModule {}

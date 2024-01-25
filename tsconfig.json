@@ -12,7 +12,7 @@
     "baseUrl": "./",
     // "moduleResolution": "NodeNext",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["src/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

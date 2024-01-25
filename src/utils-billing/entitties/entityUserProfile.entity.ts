@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { EntityProfile } from './entityProfile.entity';
-import { PhoneCode } from './phoneCode.entity';
-import { EntitySubscriberProfile } from './entitySubscriberProfile.entity';
+//import { PhoneCode } from './phoneCode.entity';
+//import { EntitySubscriberProfile } from './entitySubscriberProfile.entity';
 
 @Entity()
 export class EntityUserProfile {
@@ -38,8 +38,8 @@ export class EntityUserProfile {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  // @Column({ type: 'boolean', default: false })
-  // isAdmin: boolean;
+  @Column({ type: 'boolean', default: false })
+  isAdmin: boolean;
 
   // foreign key
   @Column({ type: 'bigint' })
@@ -48,7 +48,7 @@ export class EntityUserProfile {
   @Column({ type: 'bigint', nullable: true })
   phoneCodeId: string;
 
-  // relations
+  relations;
   @ManyToOne(
     () => EntityProfile,
     (entityProfile) => entityProfile.entityUserProfiles,
@@ -56,13 +56,13 @@ export class EntityUserProfile {
   @JoinColumn({ name: 'entityProfileId' })
   entityProfile: EntityProfile;
 
-  @ManyToOne(() => PhoneCode, (phoneCode) => phoneCode.entityUserProfiles)
-  @JoinColumn({ name: 'phoneCodeId' })
-  phoneCode: PhoneCode;
+  //   @ManyToOne(() => PhoneCode, (phoneCode) => phoneCode.entityUserProfiles)
+  //   @JoinColumn({ name: 'phoneCodeId' })
+  //   phoneCode: PhoneCode;
 
-  @OneToMany(
-    () => EntitySubscriberProfile,
-    (entitySubscriberProfile) => entitySubscriberProfile.entityUserProfile,
-  )
-  createdEntitySubscriberProfiles: EntitySubscriberProfile[];
+  //   @OneToMany(
+  //     () => EntitySubscriberProfile,
+  //     (entitySubscriberProfile) => entitySubscriberProfile.entityUserProfile,
+  //   )
+  //   createdEntitySubscriberProfiles: EntitySubscriberProfile[];
 }

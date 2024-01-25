@@ -1,40 +1,19 @@
-export enum TokenCreationPurpose {
-  SIGN_UP = 'sign_up',
-  RESET_PASSWORD = 'reset_password',
-  ACCESS_TOKEN = 'access_token',
-  INVITATION_TOKEN = 'invitation_token',
-  SINGLE_SIGN_IN = 'single_sign_in',
+export enum ProductCategory {
+  ELECTRONICS = 'electronics',
+  CLOTHING = 'clothing',
+  SPORTS_AND_OUTDOORS = 'sports_and_outdoor',
+  FOOTWEAR = 'footwear',
+  BOOKS = 'books',
 }
 
-export enum SignInTypeEnum {
-  FULL_AUTH = 'full_auth',
-  SINGLE_SIGN_IN = 'single_signin',
+export enum DeliveryStatus {
+  DELIVERED = 'delivered',
+  PENDING = 'pending',
 }
 
-export enum EmailPriority {
-  IMMEDIATE = 'immediate',
-  REGULAR = 'regular',
-  DELAYED = 'delayed',
-}
-
-export enum CacheNameEnum {
-  EMAIL_JOB = 'email_job',
-}
-
-export enum AppVerificationType {
-  LINK = 'link',
-  CODE = 'code',
-}
-
-export enum AppVerificationPivot {
-  EMAIL = 'email',
-  PHONE = 'phone',
-  AUTHENTICATIOR_APP = 'authenticator_app',
-}
-
-export enum SubscriberProfileRoleEnum {
-  OWNER = 'owner',
-  CUSTODIAN = 'custodian',
+export enum PaymentStatus {
+  PAID = 'paid',
+  PENDING = 'pending',
 }
 
 export enum ProfileTypes {

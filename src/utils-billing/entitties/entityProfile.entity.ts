@@ -6,12 +6,12 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { EntityProfilePreference } from './entityProfilePreference.entity';
+//import { EntityProfilePreference } from './entityProfilePreference.entity';
 import { EntityUserProfile } from './entityUserProfile.entity';
-import { PropertySubscription } from './propertySubscription.entity';
-import { Street } from './street.entity';
-import { PropertyType } from './propertyTypes.entity';
-import { EntitySubscriberProfile } from './entitySubscriberProfile.entity';
+//import { PropertySubscription } from './propertySubscription.entity';
+//import { Street } from './street.entity';
+//import { PropertyType } from './propertyTypes.entity';
+//import { EntitySubscriberProfile } from './entitySubscriberProfile.entity';
 
 @Entity()
 export class EntityProfile {
@@ -24,11 +24,11 @@ export class EntityProfile {
   // TODO: add lga / ward id
 
   // relations
-  @OneToOne(
-    () => EntityProfilePreference,
-    (entityProfilePreference) => entityProfilePreference.entityProfile,
-  )
-  entityProfilePreference: EntityProfilePreference;
+  //   @OneToOne(
+  //     () => EntityProfilePreference,
+  //     (entityProfilePreference) => entityProfilePreference.entityProfile,
+  //   )
+  //   entityProfilePreference: EntityProfilePreference;
 
   // @OneToMany(
   //   () => EntitySubscriberProfile,
@@ -42,21 +42,21 @@ export class EntityProfile {
   )
   entityUserProfiles: EntityUserProfile[];
 
-  @OneToMany(
-    () => PropertySubscription,
-    (propertySubscription) => propertySubscription.entityProfile,
-  )
-  propertySubscriptions: PropertySubscription[];
+  //   @OneToMany(
+  //     () => PropertySubscription,
+  //     (propertySubscription) => propertySubscription.entityProfile,
+  //   )
+  //   propertySubscriptions: PropertySubscription[];
 
-  @OneToMany(() => Street, (street) => street.entityProfile)
-  streets: Street[];
+  //   @OneToMany(() => Street, (street) => street.entityProfile)
+  //   streets: Street[];
 
-  @ManyToOne(() => PropertyType, (propertyType) => propertyType.entityProfile)
-  propertyTypes: PropertyType[];
+  //   @ManyToOne(() => PropertyType, (propertyType) => propertyType.entityProfile)
+  //   propertyTypes: PropertyType[];
 
-  @OneToMany(
-    () => EntitySubscriberProfile,
-    (entitySubscriberProfile) => entitySubscriberProfile.entityProfile,
-  )
-  entitySubscriberProfiles: EntitySubscriberProfile[];
+  //   @OneToMany(
+  //     () => EntitySubscriberProfile,
+  //     (entitySubscriberProfile) => entitySubscriberProfile.entityProfile,
+  //   )
+  //   entitySubscriberProfiles: EntitySubscriberProfile[];
 }
