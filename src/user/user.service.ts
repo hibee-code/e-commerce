@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserSignUpDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import bcrypt from 'bcrypt';
@@ -26,7 +30,7 @@ export class UserService {
     return savedNewUser;
   }
 
-  async getUserByEmail(email: string): Promise<User | undefined> {
+  async getUserByEmail(email: string): Promise<User> {
     const user = await this.dbManager.findOne(User, {
       where: {
         email: email,
@@ -36,13 +40,19 @@ export class UserService {
     return user;
   }
 
-  //   async getAllUser(userSignUpDto): Promise<User> {
-  //     const user = await this.userService.getUserById(userId);
+  async getUserById(userId: number): Promise<User> {
+    const user = await this.dbManager.findOneBy(User, { id: userId });
 
-  //     if (!user) {
-  //       throw new BadRequestException('User not found');
-  //     }
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
 
-  //     return user;
-  //   }
+  async getUsers(): Promise<User[]> {
+    const users = await this.dbManager.find(User, {
+      select: ['firstName', 'lastName', 'email'],
+    });
+    return users;
+  }
 }

@@ -11,6 +11,9 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   firstName: string;
 
+  // @Column({ type: 'varchar', nullable: true })
+  // middleName: string;
+
   @Column({ type: 'varchar', nullable: true })
   lastName: string;
 

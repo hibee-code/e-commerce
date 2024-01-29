@@ -20,7 +20,7 @@ export class TokenService {
       const decodedToken = jwt.verify(accessToken, this.JWT_SECRET) as {
         userId: number;
       };
-      const user = await this.getUserById(decodedToken.userId);
+      const user = await this.userService.getUserById(decodedToken.userId);
 
       if (!user) {
         throw new UnauthorizedException('Invalid user');
@@ -30,9 +30,5 @@ export class TokenService {
     } catch (error) {
       throw new UnauthorizedException('Invalid token');
     }
-  }
-
-  async getUserById(userId: number): Promise<User | undefined> {
-    return this.userService.getUserById(userId);
   }
 }

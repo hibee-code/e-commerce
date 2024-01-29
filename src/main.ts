@@ -12,7 +12,7 @@ async function bootstrap() {
   });
 
   const appName = processEnvObj.PROJECT_NAME || 'Nest Js app';
-  const port = Number(processEnvObj.SERVER_PORT || 5000);
+  const port = Number(processEnvObj.SERVER_PORT || 5200);
   await app.listen(port);
   Logger.log('', `${appName} started on port ${port}`);
 

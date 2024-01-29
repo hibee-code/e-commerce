@@ -216,6 +216,15 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {}
 
+  async verifiedToken(accessToken: string): Promise<User> {
+    const user = await this.tokenService.verifyToken(accessToken);
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid Token');
+    }
+    return user;
+  }
+
   async signup(
     userSignUpDto: UserSignUpDto,
   ): Promise<{ user: User; accessToken: string }> {
@@ -223,28 +232,32 @@ export class AuthService {
     const user = await this.userService.createUser({ ...rest, password });
     const accessToken = this.tokenService.generateAccessToken(user);
 
+    if (!user || !accessToken) {
+      throw new UnauthorizedException();
+    }
     return { user, accessToken };
   }
 
-  async signin(userSignInDto: UserSignInDto): Promise<User> {
+  async signin(
+    userSignInDto: UserSignInDto,
+  ): Promise<{ user: User; verifyT: string }> {
     const { email, password } = userSignInDto;
 
-    const loginUser = await this.userService.getUserByEmail(email);
+    const user = await this.userService.getUserByEmail(email);
 
-    if (!loginUser) {
+    if (!user) {
       throw new BadRequestException('Invalid email');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, loginUser.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
       throw new BadRequestException('Invalid password');
     }
 
-    return loginUser;
-  }
+    const accessToken = this.tokenService.generateAccessToken(user);
+    const verifyT: string = accessToken;
 
-  async verifyToken(accessToken: string): Promise<User> {
-    return this.tokenService.verifyToken(accessToken);
+    return { user, verifyT };
   }
 }

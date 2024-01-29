@@ -24,6 +24,8 @@ import { SharedService } from './shared/shared.service';
 //import { UtilsBillingModule } from './utils-billing/utils-billing.module';
 import { UserModule } from './user/user.module';
 import { TokenService } from './auth/token/token.service';
+import { UserService } from './user/user.service';
+import { CartModule } from './cart/cart.module';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
@@ -107,10 +109,11 @@ const validator = new ValidationPipe({
       },
       inject: [ConfigService],
     }),
-    // AuthModule,
+    AuthModule,
     SharedModule,
     UserModule,
-    TokenService,
+    CartModule,
+    // TokenService,
     //UtilsBillingModule,
   ],
   providers: [
@@ -121,6 +124,8 @@ const validator = new ValidationPipe({
     SharedService,
     JwtService,
     AppService,
+    TokenService,
+    UserService,
   ],
 })
 export class AppModule implements NestModule {
