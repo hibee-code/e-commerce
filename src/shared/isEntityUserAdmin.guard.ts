@@ -19,7 +19,7 @@ export class IsEntityUserAdmin implements CanActivate {
     if (!authPayload) {
       return false;
     }
-    const userIsEntityAdmin = authPayload.profile?.entityProfileId;
+    const userIsEntityAdmin = authPayload.userData.id;
     return !!userIsEntityAdmin && !!authPayload.userData?.id;
   }
 }

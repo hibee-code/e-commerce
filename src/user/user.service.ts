@@ -1,6 +1,7 @@
 import {
   Injectable,
   BadRequestException,
+  ConflictException,
   NotFoundException,
 } from '@nestjs/common';
 import { UserSignUpDto } from './dto/user.dto';
@@ -16,11 +17,22 @@ export class UserService {
   }
 
   async createUser(userSignUpDto: UserSignUpDto): Promise<User> {
-    const { password, ...rest } = userSignUpDto;
+    const { password } = userSignUpDto;
 
+    const existingUser = await this.dbManager.findOne(User, {
+      where: {
+        email: userSignUpDto.email,
+      },
+    });
+    if (existingUser) {
+      throw new ConflictException('Email already exist!!');
+    }
     const hash = bcrypt.hashSync(password, 10);
 
-    const newUser = this.dbManager.create(User, { ...rest, password: hash });
+    const newUser = this.dbManager.create(User, {
+      ...userSignUpDto,
+      password: hash,
+    });
 
     const savedNewUser = await this.dbManager.save(newUser);
 

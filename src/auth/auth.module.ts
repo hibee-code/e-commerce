@@ -4,10 +4,11 @@ import { AuthService } from './auth.service';
 import { TokenService } from './token/token.service';
 import { AuthController } from './auth.controller';
 import { UserController } from '@/user/user.controller';
+import { JwtService } from '@nestjs/jwt';
 //import { SharedModule } from '../shared/shared.module';
 
 @Module({
-  providers: [UserService, AuthService, TokenService],
+  providers: [UserService, AuthService, TokenService, JwtService],
   controllers: [AuthController, UserController],
 })
 export class AuthModule {}

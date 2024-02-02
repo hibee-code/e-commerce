@@ -13,7 +13,7 @@ export const GetAuthPayload = createParamDecorator(
 
     return {
       userData: request.authPayload?.userData,
-      profile: request.authPayload?.profile,
+      //profile: request.authPayload?.profile,
     } as AuthTokenPayload;
   },
 );

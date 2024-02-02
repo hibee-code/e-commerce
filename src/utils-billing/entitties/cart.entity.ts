@@ -3,7 +3,7 @@ import {
   Entity,
   JoinColumn,
   ManyToMany,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Product } from './product.entity';
@@ -26,16 +26,16 @@ export class Cart {
   @Column({ type: 'bigint', nullable: true })
   totalItem: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'bigint', nullable: true })
   userId: number;
 
   // @Column({ type: 'enum', enum: PaymentStatus })
   // paymentStatus: PaymentStatus;
 
-  @Column({ type: 'varchar', nullable: true })
-  image: URL;
+  @Column({ type: 'varchar' })
+  image: string;
 
-  @OneToOne(() => User, (user) => user.products)
+  @OneToMany(() => User, (user) => user.products)
   @JoinColumn({ name: 'userId' })
   user: User;
 

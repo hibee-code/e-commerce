@@ -2,17 +2,17 @@ import { ProfileTypes } from './enums';
 
 export interface AuthTokenPayload {
   userData?: AuthenticatedUserData;
-  profile?: ProfileSummary;
+  //profile?: ProfileSummary;
   exp?: number | unknown;
 }
 
 export interface AuthenticatedUserData {
-  id: string;
+  id: number;
   firstName: string;
   middleName?: string;
   lastName: string;
   email: string;
-  phone: string;
+  //phone: string;
 }
 
 export type ProfileSummary = {

@@ -1,4 +1,4 @@
-import { Column, OneToMany } from 'typeorm';
+import { Column, ManyToMany } from 'typeorm';
 import { Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Product } from '../../utils-billing/entitties/product.entity';
 //import { Order } from './order.entity';
@@ -23,9 +23,12 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   password: string;
 
+  // @Column({ type: 'varchar', nullable: true })
+  // phone: string;
+
   //relation
 
-  @OneToMany(() => Product, (product) => product.user)
+  @ManyToMany(() => Product, (product) => product.user)
   products: Product[];
   cart: any;
 }

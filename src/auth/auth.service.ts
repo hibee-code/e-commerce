@@ -228,8 +228,7 @@ export class AuthService {
   async signup(
     userSignUpDto: UserSignUpDto,
   ): Promise<{ user: User; accessToken: string }> {
-    const { password, ...rest } = userSignUpDto;
-    const user = await this.userService.createUser({ ...rest, password });
+    const user = await this.userService.createUser(userSignUpDto);
     const accessToken = this.tokenService.generateAccessToken(user);
 
     if (!user || !accessToken) {
@@ -256,7 +255,7 @@ export class AuthService {
     }
 
     const accessToken = this.tokenService.generateAccessToken(user);
-    const verifyT: string = accessToken;
+    const verifyT = accessToken;
 
     return { user, verifyT };
   }

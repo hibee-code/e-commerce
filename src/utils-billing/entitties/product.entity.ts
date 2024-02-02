@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { ProductCategory } from '../../lib/enums';
 
@@ -31,6 +31,6 @@ export class Product {
   @Column({ type: 'enum', enum: ProductCategory })
   productCategory: ProductCategory;
 
-  @ManyToOne(() => User, (user) => user.products)
+  @ManyToMany(() => User, (user) => user.products)
   user: User;
 }
