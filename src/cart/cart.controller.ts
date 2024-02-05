@@ -3,10 +3,9 @@ import {
   Post,
   Body,
   UseGuards,
-  NotFoundException,
   Get,
   Param,
-  Patch,
+  Put,
 } from '@nestjs/common';
 import { CartDto } from '../cart/dto/cart.dto';
 import { CartService } from '../cart/cart.service';
@@ -14,6 +13,7 @@ import { GetAuthPayload } from '@/shared/getAuthenticatedUserPayload.decorator';
 import { AuthTokenPayload } from '@/lib/types';
 import { IsAuthenticated } from '@/shared/isAuthenticated.guard';
 import { Cart } from '@/utils-billing/entitties/cart.entity';
+import { UpdateCartDto } from './dto/updateCart.dto';
 //import { IsAuthenticated } from '@/shared/isAuthenticated.guard';
 //import { JwtAuthGuard } from '@/auth/token/token.guard';
 
@@ -40,21 +40,14 @@ export class CartController {
   @Get(':id')
   async getCart(@Param('id') cartId: number): Promise<Cart> {
     const cart = await this.cartService.getCart(cartId);
-    if (!cart) {
-      throw new NotFoundException('Cart not Found!!');
-    }
     return cart;
   }
-
-  @Patch('update-cart/:id')
+  @Put('update-cart/:id')
   async updateCart(
     @Param('id') cartId: number,
-    @Body() updateCartDto: CartDto,
+    @Body() updateCartDto: UpdateCartDto,
   ): Promise<Cart> {
     const updateCart = await this.cartService.updateCart(cartId, updateCartDto);
-    if (!updateCart) {
-      throw new NotFoundException('Cart not updated');
-    }
     return updateCart;
   }
 }

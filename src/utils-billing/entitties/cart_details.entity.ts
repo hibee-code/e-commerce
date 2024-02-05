@@ -17,19 +17,19 @@ export class CartDetails {
   @Column({ type: 'bigint', nullable: true })
   cartId: number;
 
-  @Column({ type: 'bigint' })
+  @Column({ type: 'bigint', nullable: true })
   productId: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'bigint', nullable: true })
   price: string;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'bigint', nullable: true })
   createdAt: string;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'bigint', nullable: true })
   item: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'bigint', nullable: true })
   updateAt: string;
 
   //relation

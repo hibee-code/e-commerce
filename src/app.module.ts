@@ -26,6 +26,8 @@ import { UserModule } from './user/user.module';
 import { TokenService } from './auth/token/token.service';
 import { UserService } from './user/user.service';
 import { CartModule } from './cart/cart.module';
+import { OrderModule } from './order/order.module';
+import { OrderService } from './order/order.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
@@ -113,6 +115,7 @@ const validator = new ValidationPipe({
     SharedModule,
     UserModule,
     CartModule,
+    OrderModule,
     // TokenService,
     //UtilsBillingModule,
   ],
@@ -126,6 +129,7 @@ const validator = new ValidationPipe({
     AppService,
     TokenService,
     UserService,
+    // OrderService,
   ],
 })
 export class AppModule implements NestModule {

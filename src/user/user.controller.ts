@@ -3,7 +3,6 @@ import { UserService } from './user.service';
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UserSignInDto, UserSignUpDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
-import { JwtAuthGuard } from '@/auth/token/token.guard';
 
 @Controller('user')
 export class UserController {
@@ -13,7 +12,6 @@ export class UserController {
   ) {}
 
   @Post('signup')
-  @UseGuards(JwtAuthGuard)
   async signup(
     @Body() userSignUpDto: UserSignUpDto,
   ): Promise<{ accessToken: string }> {
@@ -21,7 +19,6 @@ export class UserController {
   }
 
   @Post('signin')
-  @UseGuards(JwtAuthGuard)
   signin(
     @Body() userSignInDto: UserSignInDto,
   ): Promise<{ user: User; verifyT: string }> {

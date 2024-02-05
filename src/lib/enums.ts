@@ -11,6 +11,11 @@ export enum DeliveryStatus {
   PENDING = 'pending',
 }
 
+export enum PaymentMethod {
+  ONLINE = 'online',
+  CASH = 'cash',
+}
+
 export enum PaymentStatus {
   PAID = 'paid',
   PENDING = 'pending',

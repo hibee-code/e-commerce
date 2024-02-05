@@ -11,6 +11,7 @@ import { Cart } from '../utils-billing/entitties/cart.entity';
 import { UserService } from '@/user/user.service';
 import { User } from '@/user/entities/user.entity';
 import { AuthTokenPayload } from '@/lib/types';
+import { UpdateCartDto } from './dto/updateCart.dto';
 
 @Injectable()
 export class CartService {
@@ -59,14 +60,18 @@ export class CartService {
     return cart;
   }
 
-  async updateCart(cartId: number, updateCartDto: CartDto): Promise<Cart> {
+  async updateCart(
+    cartId: number,
+    updateCartDto: UpdateCartDto,
+  ): Promise<Cart> {
     const existingCart = await this.dbManager.findOne(Cart, {
       where: { id: cartId },
     });
 
     if (!existingCart) {
-      throw new NotFoundException('Cart not Found');
+      throw new NotFoundException(`Cart with ID ${cartId} not found.`);
     }
+
     Object.assign(existingCart, updateCartDto);
 
     const updatedCart = await this.dbManager.save(existingCart);
