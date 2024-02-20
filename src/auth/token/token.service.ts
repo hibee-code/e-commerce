@@ -28,7 +28,7 @@ export class TokenService {
   async verifyToken(accessToken: string): Promise<User> {
     try {
       const decodedToken = jwt.verify(accessToken, this.JWT_SECRET) as {
-        userId: number;
+        userId: string;
       };
       const user = await this.userService.getUserById(decodedToken.userId);
 

@@ -1,26 +1,25 @@
-import { Column, ManyToMany } from 'typeorm';
+import { Column, ManyToMany, ManyToOne } from 'typeorm';
 import { Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { Product } from '../../utils-billing/entitties/product.entity';
-//import { Order } from './order.entity';
+import { Product } from '../../product/entities/product.entity';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn({ type: 'bigint' })
-  id: number;
+  id: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar' })
   firstName: string;
 
   // @Column({ type: 'varchar', nullable: true })
   // middleName: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar' })
   lastName: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar' })
   email: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar' })
   password: string;
 
   // @Column({ type: 'varchar', nullable: true })
@@ -28,7 +27,12 @@ export class User {
 
   //relation
 
-  @ManyToMany(() => Product, (product) => product.user)
+  @ManyToMany(() => Product, (product) => product.cartProducts)
   products: Product[];
-  cart: any;
+
+  // @ManyToOne(() => User, (user) => user.carts)
+  // user: User;
+
+  // @OneToMany(() => Order, (order) => order.user)
+  // orders: Order[];
 }

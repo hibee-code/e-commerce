@@ -4,13 +4,13 @@ import {
   IsDateString,
   IsEnum,
   IsNotEmpty,
-  IsNumber,
+  IsString,
 } from 'class-validator';
 
 export class OrderDto {
   @IsNotEmpty()
-  @IsNumber()
-  cartId: number;
+  @IsString()
+  cartId: string;
 
   @IsNotEmpty()
   @IsBoolean()
@@ -20,8 +20,8 @@ export class OrderDto {
   @IsDateString()
   orderDate: Date;
 
-  // @IsEnum(PaymentStatus)
-  // paymentStatus: PaymentStatus;
+  @IsEnum(PaymentStatus)
+  paymentStatus: PaymentStatus;
 
   @IsEnum(DeliveryStatus)
   deliveryStatus: DeliveryStatus;

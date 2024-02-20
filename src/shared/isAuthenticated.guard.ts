@@ -1,10 +1,6 @@
 import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import {
-  AuthenticatedCartData,
-  AuthenticatedUserData,
-  PlatformRequest,
-} from 'src/lib/types';
+import { AuthenticatedUserData, PlatformRequest } from 'src/lib/types';
 
 export class IsAuthenticated implements CanActivate {
   constructor() {
@@ -25,15 +21,7 @@ export class IsAuthenticated implements CanActivate {
 
     return isAuthenticated;
   }
-  private checkApiAccess(context: ExecutionContext) {
-    const cartData = this.getContextData(
-      context,
-      'cartData',
-    ) as AuthenticatedCartData;
-    const isAuthenticated = !!cartData && !!cartData.id;
 
-    return isAuthenticated;
-  }
   private getContextData(
     context: ExecutionContext,
     dataProp: 'userData' | 'cartData',

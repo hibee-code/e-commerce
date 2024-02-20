@@ -1,24 +1,28 @@
-import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsNumber,
   IsNumberString,
-  ValidateNested,
+  IsString,
 } from 'class-validator';
 
-export class CartDto {
+export class CartProductDto {
   @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => CartItem)
-  cartItems: CartItem[];
-}
+  @IsNumberString()
+  cartId: string;
 
-export class CartItem {
   @IsNotEmpty()
   @IsNumberString()
   productId: string;
 
   @IsNotEmpty()
   @IsNumber()
+  price: number;
+
+  @IsNotEmpty()
+  @IsNumber()
   quantity: number;
+
+  @IsNotEmpty()
+  @IsString()
+  image: string;
 }

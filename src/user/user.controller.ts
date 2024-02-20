@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UserSignInDto, UserSignUpDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
+import { IsAuthenticated } from '@/shared/isAuthenticated.guard';
 
 @Controller('user')
 export class UserController {
@@ -12,6 +13,7 @@ export class UserController {
   ) {}
 
   @Post('signup')
+  @UseGuards(IsAuthenticated)
   async signup(
     @Body() userSignUpDto: UserSignUpDto,
   ): Promise<{ accessToken: string }> {
@@ -19,6 +21,7 @@ export class UserController {
   }
 
   @Post('signin')
+  @UseGuards(IsAuthenticated)
   signin(
     @Body() userSignInDto: UserSignInDto,
   ): Promise<{ user: User; verifyT: string }> {
@@ -32,7 +35,7 @@ export class UserController {
   }
 
   @Get(':id')
-  async getUser(@Param('id') userId: number): Promise<User> {
+  async getUser(@Param('id') userId: string): Promise<User> {
     const user = await this.UsersService.getUserById(userId);
     if (user) {
       return user;

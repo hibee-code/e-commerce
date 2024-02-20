@@ -28,7 +28,7 @@ import { UserService } from './user/user.service';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
 import { OrderService } from './order/order.service';
-
+import { ProductModule } from './product/product.module';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
 
@@ -36,13 +36,14 @@ const validator = new ValidationPipe({
   whitelist: false,
   transform: true,
   exceptionFactory(errors) {
-    const formattedErrors = errors.reduce((prev, error) => {
-      if (!has(prev, error.property)) {
-        prev[error.property] = first(values(error.constraints || {}));
-      }
+    const formattedErrors = errors;
+    // .reduce((prev, error) => {
+    //   if (!has(prev, error.property)) {
+    //     prev[error.property] = first(values(error.constraints || {}));
+    //   }
 
-      return prev;
-    }, {} as Record<string, string>);
+    //   return prev;
+    // }, {} as Record<string, string>);
 
     return new BadRequestException(
       {
@@ -116,6 +117,7 @@ const validator = new ValidationPipe({
     UserModule,
     CartModule,
     OrderModule,
+    ProductModule,
     // TokenService,
     //UtilsBillingModule,
   ],

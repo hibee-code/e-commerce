@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { IsAuthenticated } from '@/shared/isAuthenticated.guard';
 import { OrderDto } from './dto/order.dto';
-import { Order } from '../utils-billing/entitties/order.entity';
+import { Order } from './entities/order.entity';
+
+//import { CartService } from '@/cart/cart.service';
 
 @Controller('order')
 export class OrderController {
@@ -13,14 +14,21 @@ export class OrderController {
     const allOrder = await this.orderService.getAllOrders();
     return allOrder;
   }
+  @Get('order-by-id/:id')
+  async getOrderByCartId(@Param('id') cartId: string) {
+    const findCart = await this.orderService.getOrderId(cartId);
+    return findCart;
+  }
+  @Get('order-details/:cartId')
+  async getOrderDetails(@Param('cartId') cartId: string) {
+    const findOrderDetails = await this.orderService.getOrderDetails(cartId);
+    return findOrderDetails;
+  }
 
   @Post('create-order')
-  //@UseGuards(IsAuthenticated)
-  async createOrder(@Body() orderDto: unknown, cartId: number) {
-    const newOrder = await this.orderService.createOrder(
-      orderDto as OrderDto,
-      cartId,
-    );
+  async createOrder(@Body() orderDto: OrderDto) {
+    const { cartId } = orderDto;
+    const newOrder = await this.orderService.createOrder(orderDto, cartId);
     return newOrder;
   }
 }

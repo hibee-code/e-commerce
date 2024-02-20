@@ -7,15 +7,13 @@ import {
   Param,
   Put,
 } from '@nestjs/common';
-import { CartDto } from '../cart/dto/cart.dto';
 import { CartService } from '../cart/cart.service';
 import { GetAuthPayload } from '@/shared/getAuthenticatedUserPayload.decorator';
 import { AuthTokenPayload } from '@/lib/types';
 import { IsAuthenticated } from '@/shared/isAuthenticated.guard';
-import { Cart } from '@/utils-billing/entitties/cart.entity';
 import { UpdateCartDto } from './dto/updateCart.dto';
-//import { IsAuthenticated } from '@/shared/isAuthenticated.guard';
-//import { JwtAuthGuard } from '@/auth/token/token.guard';
+import { Cart } from './entities/cart.entity';
+import { CartDto } from './dto/cart.dto';
 
 @Controller('cart')
 export class CartController {
@@ -33,18 +31,18 @@ export class CartController {
 
   @Get('view-all-cart')
   //@UseGuards(IsAuthenticated)
-  async getUserCarts(): Promise<Cart[]> {
+  async getCarts(): Promise<Cart[]> {
     const allCarts = await this.cartService.getAllCarts();
     return allCarts;
   }
   @Get(':id')
-  async getCart(@Param('id') cartId: number): Promise<Cart> {
+  async getCart(@Param('id') cartId: string): Promise<Cart> {
     const cart = await this.cartService.getCart(cartId);
     return cart;
   }
   @Put('update-cart/:id')
   async updateCart(
-    @Param('id') cartId: number,
+    @Param('id') cartId: string,
     @Body() updateCartDto: UpdateCartDto,
   ): Promise<Cart> {
     const updateCart = await this.cartService.updateCart(cartId, updateCartDto);

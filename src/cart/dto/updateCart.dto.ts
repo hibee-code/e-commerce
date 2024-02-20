@@ -1,23 +1,16 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
 
 export class UpdateCartDto {
-  @IsOptional()
-  @IsString()
-  description: string;
+  @ValidateNested()
+  @IsNotEmpty()
+  cartItems: UpdateCartItem[];
+}
 
-  @IsOptional()
-  @IsNumber()
-  price: number;
+export class UpdateCartItem {
+  @IsNotEmpty()
+  productId: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsNumber()
   quantity: number;
-
-  @IsOptional()
-  @IsNumber()
-  totalItem: number;
-
-  @IsOptional()
-  @IsString()
-  image: string;
 }

@@ -1,4 +1,4 @@
-import { EntityUserProfile } from '../../utils-billing/entitties/entityUserProfile.entity';
+//import { EntityUserProfile } from '../../utils-billing/entitties/entityUserProfile.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 
@@ -11,19 +11,19 @@ export class HelpersService {
 
   private dbManager: EntityManager;
 
-  async getEntityUserProfileByEmailOrId({
-    email,
-    entityUserProfileId,
-  }: {
-    email?: string;
-    entityUserProfileId?: string;
-  }): Promise<EntityUserProfile> {
-    const entityUserProfile = await this.dbManager.findOne(EntityUserProfile, {
-      where: {
-        ...(email ? { email } : { id: entityUserProfileId }),
-      },
-    });
+  //async getEntityUserProfileByEmailOrId({
+  //   email,
+  //   entityUserProfileId,
+  // }: {
+  //   email?: string;
+  //   entityUserProfileId?: string;
+  // }): Promise<EntityUserProfile> {
+  //   const entityUserProfile = await this.dbManager.findOne(EntityUserProfile, {
+  //     where: {
+  //       ...(email ? { email } : { id: entityUserProfileId }),
+  //     },
+  //   });
 
-    return entityUserProfile;
-  }
+  //   return entityUserProfile;
+  // }
 }

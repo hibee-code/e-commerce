@@ -52,7 +52,7 @@ export class UserService {
     return user;
   }
 
-  async getUserById(userId: number): Promise<User> {
+  async getUserById(userId: string): Promise<User> {
     const user = await this.dbManager.findOneBy(User, { id: userId });
 
     if (!user) {
