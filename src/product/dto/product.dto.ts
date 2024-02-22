@@ -1,4 +1,4 @@
-import { PaymentStatus, ProductCategory } from '@/lib/enums';
+import { ProductCategory } from '@/lib/enums';
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class ProductDto {
@@ -16,7 +16,7 @@ export class ProductDto {
 
   @IsNotEmpty()
   @IsNumber()
-  price: number;
+  price: string;
 
   @IsNotEmpty()
   @IsString()

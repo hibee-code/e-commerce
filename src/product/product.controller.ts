@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ProductDto } from './dto/product.dto';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
@@ -18,13 +26,19 @@ export class ProductController {
     const products = await this.productService.all_product();
     return products;
   }
-  @Get(':id')
+  @Get('product/:id')
   async getProduct(@Param('id') productId: string): Promise<Product> {
     const product = await this.productService.getProduct(productId);
     return product;
   }
   @Get('search')
-  async search(@Query('/:search') searchQuery: string): Promise<Product[]> {
+  async searchProducts(
+    @Query('search') searchQuery: string,
+  ): Promise<Product[]> {
+    if (!searchQuery || typeof searchQuery !== 'string') {
+      throw new BadRequestException('searchQuery must be a non-empty string');
+    }
+
     return await this.productService.searchProducts(searchQuery);
   }
 }

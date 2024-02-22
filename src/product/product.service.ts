@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, EntityManager } from 'typeorm';
+import { DataSource, EntityManager, ILike } from 'typeorm';
 import { ProductDto } from './dto/product.dto';
 import { Product } from './entities/product.entity';
 
@@ -27,20 +27,17 @@ export class ProductService {
     });
     return product;
   }
+
   async searchProducts(searchQuery: string): Promise<Product[]> {
-    const products = await this.dbManager
-      .createQueryBuilder(Product, 'product')
-      .where('LOWER(product.name) LIKE LOWER(:searchQuery)', {
-        searchQuery: `%${searchQuery}%`,
-      })
-      .orWhere('LOWER(product.brand) LIKE LOWER(:searchQuery)', {
-        searchQuery: `%${searchQuery}%`,
-      })
-      .orWhere('LOWER(product.category) LIKE LOWER(:searchQuery)', {
-        searchQuery: `%${searchQuery}%`,
-      })
-      .getMany();
-    console.log(products, 'my result');
+    const products = await this.dbManager.find(Product, {
+      where: [
+        { name: ILike(`%${searchQuery}%`) },
+        { brand: ILike(`%${searchQuery}%`) },
+        { tag: ILike(`%${searchQuery}%`) },
+        { productCategory: searchQuery as any },
+      ],
+    });
+
     return products;
   }
 }

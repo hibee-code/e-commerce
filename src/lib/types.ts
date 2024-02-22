@@ -1,4 +1,4 @@
-import { ProfileTypes } from './enums';
+//import { ProfileTypes } from './enums';
 
 export interface AuthTokenPayload {
   userData?: AuthenticatedUserData;
@@ -18,7 +18,7 @@ export interface AuthenticatedUserData {
 export type ProfileSummary = {
   id: string;
   profileTypeId: string;
-  profileType: ProfileTypes;
+  //profileType: ProfileTypes;
   entityProfileId?: string;
 };
 

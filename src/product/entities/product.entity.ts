@@ -17,7 +17,7 @@ export class Product {
   brand: string;
 
   @Column({ type: 'numeric' })
-  price: number;
+  price: string;
 
   @Column({ type: 'varchar', nullable: true })
   tag: string;

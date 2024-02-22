@@ -22,7 +22,7 @@ export class CartProduct {
   quantity: number;
 
   @Column({ type: 'numeric' })
-  price: number;
+  price: string;
 
   @Column({ type: 'varchar' })
   image: string;

@@ -10,6 +10,7 @@ import { CartDto, CartItem } from './dto/cart.dto';
 import { Product } from '@/product/entities/product.entity';
 import { CartProduct } from '@/cart-product/entities/cartProduct.entity';
 import { UpdateCartDto } from './dto/updateCart.dto';
+import { throwBadRequest } from '@/utils/helpers';
 
 @Injectable()
 export class CartService {
@@ -49,7 +50,7 @@ export class CartService {
       cartProductsarray.push(newCartProduct);
 
       totalItems = totalItems + 1;
-      totalPrice = totalPrice += product.price;
+      totalPrice = totalPrice + Number(product.price);
     }
     // Create a new instance of Cart
     let newCart = this.dbManager.create(Cart, {
@@ -75,10 +76,18 @@ export class CartService {
         cartProducts: true,
       },
     });
+    if (!cart) {
+      throwBadRequest('Cart doesn"t exist');
+    }
     return cart;
   }
   async getCart(cartId: string): Promise<Cart> {
-    const cart = await this.dbManager.findOneBy(Cart, { id: cartId });
+    const cart = await this.dbManager.findOne(Cart, {
+      where: { id: cartId },
+      relations: {
+        cartProducts: true,
+      },
+    });
     if (!cart) {
       throw new NotFoundException('Cart not found');
     }
@@ -133,21 +142,21 @@ export class CartService {
 
         newCartProduct = await this.dbManager.save(newCartProduct);
 
-        existingCart.totalItems += 1;
-        existingCart.totalPrice += product.price * productItem.quantity;
+        existingCart.totalItems++;
+        existingCart.totalPrice += Number(product.price) * productItem.quantity;
       }
       // updating quantity in the existingCartProduct
 
       // deduct price of cartproduct before update
       existingCart.totalPrice = String(
         Number(existingCart.totalPrice) -
-          existingCartProduct.price * existingCartProduct.quantity,
+          Number(existingCartProduct.price) * existingCartProduct.quantity,
       );
       existingCartProduct.quantity = productItem.quantity;
 
       existingCart.totalPrice = String(
         Number(existingCart.totalPrice) +
-          existingCartProduct.price * existingCartProduct.quantity,
+          Number(existingCartProduct.price) * existingCartProduct.quantity,
       );
       await this.dbManager.save(existingCartProduct);
     }

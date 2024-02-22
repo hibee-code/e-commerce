@@ -1,13 +1,13 @@
 import { Order } from './entities/order.entity';
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { OrderDto } from './dto/order.dto';
 import { CartService } from '@/cart/cart.service';
+import { AuthTokenPayload } from '@/lib/types';
 
 @Injectable()
 export class OrderService {
@@ -23,7 +23,12 @@ export class OrderService {
     return this.dbManager.find(Order);
   }
 
-  async createOrder(orderDto: OrderDto, cartId: string): Promise<Order> {
+  async createOrder(
+    // authPayload: AuthTokenPayload,
+    orderDto: OrderDto,
+    cartId: string,
+  ): Promise<Order> {
+    //const { userData } = authPayload;
     const order = this.dbManager.create(Order, {
       ...orderDto,
       cartId: cartId,
@@ -53,7 +58,9 @@ export class OrderService {
   async getOrderDetails(cartId: string): Promise<Order> {
     const orderDetails = await this.dbManager.findOne(Order, {
       where: { cartId },
-      relations: ['cart'],
+      relations: {
+        cart: true,
+      },
     });
 
     if (!orderDetails) {

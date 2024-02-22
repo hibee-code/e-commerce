@@ -10,17 +10,17 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Get('view-all-order')
-  async getAllOrder(): Promise<Order[]> {
+  async allOrder(): Promise<Order[]> {
     const allOrder = await this.orderService.getAllOrders();
     return allOrder;
   }
   @Get('order-by-id/:id')
-  async getOrderByCartId(@Param('id') cartId: string) {
+  async orderByCartId(@Param('id') cartId: string) {
     const findCart = await this.orderService.getOrderId(cartId);
     return findCart;
   }
   @Get('order-details/:cartId')
-  async getOrderDetails(@Param('cartId') cartId: string) {
+  async orderDetails(@Param('cartId') cartId: string) {
     const findOrderDetails = await this.orderService.getOrderDetails(cartId);
     return findOrderDetails;
   }
