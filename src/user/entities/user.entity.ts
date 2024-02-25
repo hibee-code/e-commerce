@@ -22,9 +22,6 @@ export class User {
   @Column({ type: 'varchar' })
   password: string;
 
-  // @Column({ type: 'varchar', nullable: true })
-  // phone: string;
-
   //relation
 
   @ManyToMany(() => Product, (product) => product.cartProducts)

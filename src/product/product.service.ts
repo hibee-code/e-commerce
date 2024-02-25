@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, ILike } from 'typeorm';
 import { ProductDto } from './dto/product.dto';
 import { Product } from './entities/product.entity';
+import { Product_Details } from '@/product-details/entities/product_details.entity';
 
 @Injectable()
 export class ProductService {
@@ -39,5 +40,17 @@ export class ProductService {
     });
 
     return products;
+  }
+
+  async productDetailsById(productId: string): Promise<Product_Details> {
+    const productDeatails = await this.dbManager.findOne(Product_Details, {
+      where: {
+        id: productId,
+      },
+      relations: {
+        product: true,
+      },
+    });
+    return productDeatails;
   }
 }
