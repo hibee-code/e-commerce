@@ -28,7 +28,7 @@ export class ProductController {
   }
   @Get('product/:id')
   async getProduct(@Param('id') productId: string): Promise<Product> {
-    const product = await this.productService.getProduct(productId);
+    const product = await this.productService.getProductDetails(productId);
     return product;
   }
   @Get('search')
@@ -40,5 +40,14 @@ export class ProductController {
     }
 
     return await this.productService.searchProducts(searchQuery);
+  }
+
+  @Get('filter')
+  async filterProducts(
+    @Query() filterParams: any,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    return await this.productService.filterProducts(filterParams, page, limit);
   }
 }

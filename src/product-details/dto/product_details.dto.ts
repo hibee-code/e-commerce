@@ -1,4 +1,9 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsNumberString,
+  IsString,
+} from 'class-validator';
 
 export class Product_DetailsDto {
   @IsNotEmpty()
@@ -10,7 +15,7 @@ export class Product_DetailsDto {
   colour: string;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsNumberString()
   size: number;
 
   @IsNotEmpty()

@@ -1,13 +1,6 @@
-import {
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ProductCategory } from '../../lib/enums';
 import { CartProduct } from '../../cart-product/entities/cartProduct.entity';
-import { Product_Details } from '../../product-details/entities/product_details.entity';
 
 @Entity()
 export class Product {
@@ -35,8 +28,6 @@ export class Product {
   @Column({ type: 'enum', enum: ProductCategory })
   productCategory: ProductCategory;
 
-  @OneToOne(() => Product_Details, (product_details) => product_details.product)
-  product_details: Product_Details;
   @OneToMany(() => CartProduct, (cartProduct) => cartProduct.product)
   cartProducts: CartProduct[];
 }

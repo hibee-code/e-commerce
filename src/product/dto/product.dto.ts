@@ -28,4 +28,5 @@ export class ProductDto {
 
   @IsEnum(ProductCategory)
   productCategory: ProductCategory;
+  priceMin: any;
 }
