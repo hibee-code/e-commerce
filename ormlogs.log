@@ -1,0 +1,947 @@
+[2024-01-18T11:05:40.389Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T11:05:40.391Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T11:05:42.544Z][QUERY]: SELECT version();
+[2024-01-18T11:05:42.557Z][QUERY]: SELECT version();
+[2024-01-18T11:05:42.558Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-18T11:05:42.563Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.638Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-18T11:05:42.640Z]0 migrations are already loaded in the database.
+[2024-01-18T11:05:42.640Z]1 migrations were found in the source code.
+[2024-01-18T11:05:42.640Z]1 migrations are new migrations must be executed.
+[2024-01-18T11:05:42.640Z][QUERY]: START TRANSACTION
+[2024-01-18T11:05:42.641Z][QUERY]: CREATE TYPE "public"."email_priority_enum" AS ENUM('immediate', 'regular', 'delayed')
+[2024-01-18T11:05:42.645Z][QUERY]: CREATE TABLE "email" ("id" BIGSERIAL NOT NULL, "priority" "public"."email_priority_enum" NOT NULL DEFAULT 'regular', "attachmentFileUrls" jsonb, "body" json NOT NULL, "sendAt" TIMESTAMP WITH TIME ZONE, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, CONSTRAINT "PK_1e7ed8734ee054ef18002e29b1c" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.659Z][QUERY]: CREATE TABLE "sms" ("id" BIGSERIAL NOT NULL, "content" text NOT NULL, "sender" character varying NOT NULL, "to" character varying NOT NULL, CONSTRAINT "PK_60793c2f16aafe0513f8817eae8" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.669Z][QUERY]: CREATE TYPE "public"."product_productcategory_enum" AS ENUM('Electronics', 'clothes', 'food', 'shoe', 'products')
+[2024-01-18T11:05:42.670Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.679Z][QUERY]: CREATE TABLE "order_details" ("id" SERIAL NOT NULL, "price" bigint, "quantity" bigint, "productId" bigint, "userId" bigint, "orderId" bigint, CONSTRAINT "PK_278a6e0f21c9db1653e6f406801" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.685Z][QUERY]: CREATE TYPE "public"."order_deliverystatus_enum" AS ENUM('delivery', 'ongoing', 'unknown')
+[2024-01-18T11:05:42.685Z][QUERY]: CREATE TABLE "order" ("id" bigint NOT NULL, "isPaid" character varying, "totalAmount" integer, "orderDate" date, "userId" bigint, "cartId" integer, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.694Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.703Z][QUERY]: CREATE TYPE "public"."payment_paymentmethod_enum" AS ENUM('Pending', 'Completed', 'Failed', 'Cancelled', 'Refunded')
+[2024-01-18T11:05:42.704Z][QUERY]: CREATE TABLE "payment" ("id" bigint NOT NULL, "orderId" integer, "paymentMethod" "public"."payment_paymentmethod_enum" NOT NULL, CONSTRAINT "PK_fcaec7df5adf9cac408c686b2ab" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.709Z][QUERY]: CREATE TABLE "product_attribute" ("id" bigint NOT NULL, "name" character varying, "colour" character varying, "size" bigint, "weight" bigint, CONSTRAINT "PK_f9b91f38df3dbbe481d9e056e5e" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.718Z][QUERY]: CREATE TABLE "cart" ("id" bigint NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "image" character varying, "productId" bigint, "user_id" bigint, CONSTRAINT "REL_f091e86a234693a49084b4c2c8" UNIQUE ("user_id"), CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.731Z][QUERY]: CREATE TABLE "cart_items" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, CONSTRAINT "PK_2bf7996b7946ce753b60a87468c" PRIMARY KEY ("cartId", "productId"))
+[2024-01-18T11:05:42.735Z][QUERY]: CREATE INDEX "IDX_edd714311619a5ad0952504583" ON "cart_items" ("cartId") 
+[2024-01-18T11:05:42.740Z][QUERY]: CREATE INDEX "IDX_72679d98b31c737937b8932ebe" ON "cart_items" ("productId") 
+[2024-01-18T11:05:42.745Z][QUERY]: ALTER TABLE "product" ADD CONSTRAINT "FK_329b8ae12068b23da547d3b4798" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T11:05:42.750Z][QUERY]: ALTER TABLE "order_details" ADD CONSTRAINT "FK_147bc15de4304f89a93c7eee969" FOREIGN KEY ("orderId") REFERENCES "order"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T11:05:42.751Z][QUERY]: ALTER TABLE "order_details" ADD CONSTRAINT "FK_c67ebaba3e5085b6401911acc70" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T11:05:42.752Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_caabe91507b3379c7ba73637b84" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T11:05:42.753Z][QUERY]: ALTER TABLE "cart" ADD CONSTRAINT "FK_f091e86a234693a49084b4c2c86" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T11:05:42.754Z][QUERY]: ALTER TABLE "cart_items" ADD CONSTRAINT "FK_edd714311619a5ad09525045838" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE CASCADE ON UPDATE CASCADE
+[2024-01-18T11:05:42.755Z][QUERY]: ALTER TABLE "cart_items" ADD CONSTRAINT "FK_72679d98b31c737937b8932ebe6" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE
+[2024-01-18T11:05:42.756Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-01-18T11:05:42.770Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1705575826366,"Sh1705575826366"]
+[2024-01-18T11:05:42.772Z]Migration Sh1705575826366 has been  executed successfully.
+[2024-01-18T11:05:42.772Z][QUERY]: COMMIT
+[2024-01-18T14:21:56.393Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T14:21:58.554Z][QUERY]: SELECT version();
+[2024-01-18T14:21:58.568Z][QUERY]: SELECT version();
+[2024-01-18T14:21:58.569Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-18T14:21:58.575Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.606Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-18T14:21:58.607Z]0 migrations are already loaded in the database.
+[2024-01-18T14:21:58.607Z]1 migrations were found in the source code.
+[2024-01-18T14:21:58.607Z]1 migrations are new migrations must be executed.
+[2024-01-18T14:21:58.607Z][QUERY]: START TRANSACTION
+[2024-01-18T14:21:58.608Z][QUERY]: CREATE TABLE "email" ("id" BIGSERIAL NOT NULL, "priority" "public"."email_priority_enum" NOT NULL DEFAULT 'regular', "attachmentFileUrls" jsonb, "body" json NOT NULL, "sendAt" TIMESTAMP WITH TIME ZONE, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, CONSTRAINT "PK_1e7ed8734ee054ef18002e29b1c" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.620Z][QUERY]: CREATE TABLE "product_attribute" ("id" bigint NOT NULL, "name" character varying, "colour" character varying, "size" bigint, "weight" bigint, CONSTRAINT "PK_f9b91f38df3dbbe481d9e056e5e" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.631Z][QUERY]: CREATE TABLE "order_details" ("id" SERIAL NOT NULL, "price" bigint, "quantity" bigint, "productId" bigint, "userId" bigint, "orderId" bigint, CONSTRAINT "PK_278a6e0f21c9db1653e6f406801" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.638Z][QUERY]: CREATE TABLE "order" ("id" bigint NOT NULL, "isPaid" character varying, "totalAmount" integer, "orderDate" date, "userId" bigint, "cartId" integer, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.647Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.657Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.668Z][QUERY]: CREATE TABLE "payment" ("id" bigint NOT NULL, "orderId" integer, "paymentMethod" "public"."payment_paymentmethod_enum" NOT NULL, CONSTRAINT "PK_fcaec7df5adf9cac408c686b2ab" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.673Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "image" character varying, "productId" bigint, "user_id" bigint, CONSTRAINT "REL_f091e86a234693a49084b4c2c8" UNIQUE ("user_id"), CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.688Z][QUERY]: CREATE TYPE "public"."cart_details_paymentstatus_enum" AS ENUM('Pending', 'Completed', 'Failed', 'Cancelled', 'Refunded')
+[2024-01-18T14:21:58.690Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "totalItem" bigint, "productId" bigint, "totalAmount" bigint, "paymentStatus" "public"."cart_details_paymentstatus_enum" NOT NULL, "cart_id" bigint, "product_id" bigint, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.697Z][QUERY]: CREATE TABLE "cartDetails" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, CONSTRAINT "PK_1d05522cff47068c4f00c4734ca" PRIMARY KEY ("cartId", "productId"))
+[2024-01-18T14:21:58.703Z][QUERY]: CREATE INDEX "IDX_ba982733a43ab55b6ce17f771a" ON "cartDetails" ("cartId") 
+[2024-01-18T14:21:58.708Z][QUERY]: CREATE INDEX "IDX_54d756171ca83e5cfd6eab9685" ON "cartDetails" ("productId") 
+[2024-01-18T14:21:58.712Z][QUERY]: ALTER TABLE "order_details" ADD CONSTRAINT "FK_147bc15de4304f89a93c7eee969" FOREIGN KEY ("orderId") REFERENCES "order"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T14:21:58.716Z][QUERY]: ALTER TABLE "order_details" ADD CONSTRAINT "FK_c67ebaba3e5085b6401911acc70" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T14:21:58.717Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_caabe91507b3379c7ba73637b84" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T14:21:58.718Z][QUERY]: ALTER TABLE "product" ADD CONSTRAINT "FK_329b8ae12068b23da547d3b4798" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T14:21:58.719Z][QUERY]: ALTER TABLE "cart" ADD CONSTRAINT "FK_f091e86a234693a49084b4c2c86" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T14:21:58.720Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_c81e3af806614bbf45024de3ca4" FOREIGN KEY ("cart_id") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T14:21:58.723Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_9c56e71ba578cd23b493f4d1394" FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T14:21:58.724Z][QUERY]: ALTER TABLE "cartDetails" ADD CONSTRAINT "FK_ba982733a43ab55b6ce17f771a8" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE CASCADE ON UPDATE CASCADE
+[2024-01-18T14:21:58.725Z][QUERY]: ALTER TABLE "cartDetails" ADD CONSTRAINT "FK_54d756171ca83e5cfd6eab96858" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE
+[2024-01-18T14:21:58.726Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-01-18T14:21:58.740Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1705587643721,"Sh1705587643721"]
+[2024-01-18T14:21:58.742Z]Migration Sh1705587643721 has been  executed successfully.
+[2024-01-18T14:21:58.743Z][QUERY]: COMMIT
+[2024-01-18T15:00:15.955Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T15:00:15.970Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T15:00:34.486Z][QUERY]: SELECT version();
+[2024-01-18T15:00:34.523Z][QUERY]: SELECT version();
+[2024-01-18T15:00:34.536Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-18T15:00:34.568Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-01-18T15:00:34.673Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-18T15:00:34.681Z]0 migrations are already loaded in the database.
+[2024-01-18T15:00:34.682Z]1 migrations were found in the source code.
+[2024-01-18T15:00:34.683Z]1 migrations are new migrations must be executed.
+[2024-01-18T15:00:34.686Z][QUERY]: START TRANSACTION
+[2024-01-18T15:00:34.690Z][QUERY]: CREATE TABLE "email" ("id" BIGSERIAL NOT NULL, "priority" "public"."email_priority_enum" NOT NULL DEFAULT 'regular', "attachmentFileUrls" jsonb, "body" json NOT NULL, "sendAt" TIMESTAMP WITH TIME ZONE, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, CONSTRAINT "PK_1e7ed8734ee054ef18002e29b1c" PRIMARY KEY ("id"))
+[2024-01-18T15:00:34.749Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-18T15:00:34.792Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-18T15:00:34.833Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "image" character varying, "productId" bigint, "user_id" bigint, CONSTRAINT "REL_f091e86a234693a49084b4c2c8" UNIQUE ("user_id"), CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-01-18T15:00:34.895Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "totalItem" bigint, "productId" bigint, "totalAmount" bigint, "paymentStatus" "public"."cart_details_paymentstatus_enum" NOT NULL, "cart_id" bigint, "product_id" bigint, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-01-18T15:00:34.920Z][QUERY]: CREATE TABLE "cartDetails" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, CONSTRAINT "PK_1d05522cff47068c4f00c4734ca" PRIMARY KEY ("cartId", "productId"))
+[2024-01-18T15:00:34.942Z][QUERY]: CREATE INDEX "IDX_ba982733a43ab55b6ce17f771a" ON "cartDetails" ("cartId") 
+[2024-01-18T15:00:34.960Z][QUERY]: CREATE INDEX "IDX_54d756171ca83e5cfd6eab9685" ON "cartDetails" ("productId") 
+[2024-01-18T15:00:34.979Z][QUERY]: ALTER TABLE "product" ADD CONSTRAINT "FK_329b8ae12068b23da547d3b4798" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T15:00:34.992Z][QUERY]: ALTER TABLE "cart" ADD CONSTRAINT "FK_f091e86a234693a49084b4c2c86" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T15:00:35.002Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_c81e3af806614bbf45024de3ca4" FOREIGN KEY ("cart_id") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T15:00:35.009Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_9c56e71ba578cd23b493f4d1394" FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T15:00:35.016Z][QUERY]: ALTER TABLE "cartDetails" ADD CONSTRAINT "FK_ba982733a43ab55b6ce17f771a8" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE CASCADE ON UPDATE CASCADE
+[2024-01-18T15:00:35.025Z][QUERY]: ALTER TABLE "cartDetails" ADD CONSTRAINT "FK_54d756171ca83e5cfd6eab96858" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE
+[2024-01-18T15:00:35.032Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-01-18T15:00:35.098Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1705589927855,"Sh1705589927855"]
+[2024-01-18T15:00:35.111Z]Migration Sh1705589927855 has been  executed successfully.
+[2024-01-18T15:00:35.113Z][QUERY]: COMMIT
+[2024-01-18T16:08:52.531Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T16:08:52.534Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T16:08:54.925Z][QUERY]: SELECT version();
+[2024-01-18T16:08:54.942Z][QUERY]: SELECT version();
+[2024-01-18T16:08:54.944Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-18T16:08:54.949Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-01-18T16:08:55.016Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-18T16:08:55.019Z]0 migrations are already loaded in the database.
+[2024-01-18T16:08:55.019Z]2 migrations were found in the source code.
+[2024-01-18T16:08:55.020Z]2 migrations are new migrations must be executed.
+[2024-01-18T16:08:55.021Z][QUERY]: START TRANSACTION
+[2024-01-18T16:08:55.023Z][QUERY]: CREATE TABLE "email" ("id" BIGSERIAL NOT NULL, "priority" "public"."email_priority_enum" NOT NULL DEFAULT 'regular', "attachmentFileUrls" jsonb, "body" json NOT NULL, "sendAt" TIMESTAMP WITH TIME ZONE, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, CONSTRAINT "PK_1e7ed8734ee054ef18002e29b1c" PRIMARY KEY ("id"))
+[2024-01-18T16:08:55.040Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-18T16:08:55.050Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-18T16:08:55.060Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "image" character varying, "productId" bigint, "user_id" bigint, CONSTRAINT "REL_f091e86a234693a49084b4c2c8" UNIQUE ("user_id"), CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-01-18T16:08:55.072Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "totalItem" bigint, "productId" bigint, "totalAmount" bigint, "paymentStatus" "public"."cart_details_paymentstatus_enum" NOT NULL, "cart_id" bigint, "product_id" bigint, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-01-18T16:08:55.078Z][QUERY]: CREATE TABLE "cartDetails" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, CONSTRAINT "PK_1d05522cff47068c4f00c4734ca" PRIMARY KEY ("cartId", "productId"))
+[2024-01-18T16:08:55.082Z][QUERY]: CREATE INDEX "IDX_ba982733a43ab55b6ce17f771a" ON "cartDetails" ("cartId") 
+[2024-01-18T16:08:55.086Z][QUERY]: CREATE INDEX "IDX_54d756171ca83e5cfd6eab9685" ON "cartDetails" ("productId") 
+[2024-01-18T16:08:55.090Z][QUERY]: ALTER TABLE "product" ADD CONSTRAINT "FK_329b8ae12068b23da547d3b4798" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T16:08:55.094Z][QUERY]: ALTER TABLE "cart" ADD CONSTRAINT "FK_f091e86a234693a49084b4c2c86" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T16:08:55.095Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_c81e3af806614bbf45024de3ca4" FOREIGN KEY ("cart_id") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T16:08:55.096Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_9c56e71ba578cd23b493f4d1394" FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T16:08:55.097Z][QUERY]: ALTER TABLE "cartDetails" ADD CONSTRAINT "FK_ba982733a43ab55b6ce17f771a8" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE CASCADE ON UPDATE CASCADE
+[2024-01-18T16:08:55.098Z][QUERY]: ALTER TABLE "cartDetails" ADD CONSTRAINT "FK_54d756171ca83e5cfd6eab96858" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE
+[2024-01-18T16:08:55.099Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-01-18T16:08:55.111Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1705589927855,"Sh1705589927855"]
+[2024-01-18T16:08:55.113Z]Migration Sh1705589927855 has been  executed successfully.
+[2024-01-18T16:08:55.113Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-18T16:08:55.114Z][FAILED QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-18T16:08:55.114Z][QUERY ERROR]: error: relation "product" already exists
+[2024-01-18T16:08:55.115Z]Migration "Sh1705594115941" failed, error: relation "product" already exists
+[2024-01-18T16:08:55.115Z][QUERY]: ROLLBACK
+[2024-01-18T16:12:09.785Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T16:12:09.787Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T16:12:12.041Z][QUERY]: SELECT version();
+[2024-01-18T16:12:12.058Z][QUERY]: SELECT version();
+[2024-01-18T16:12:12.060Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-18T16:12:12.066Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-01-18T16:12:12.092Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-18T16:12:12.095Z]0 migrations are already loaded in the database.
+[2024-01-18T16:12:12.095Z]1 migrations were found in the source code.
+[2024-01-18T16:12:12.095Z]1 migrations are new migrations must be executed.
+[2024-01-18T16:12:12.096Z][QUERY]: START TRANSACTION
+[2024-01-18T16:12:12.097Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-18T16:12:12.114Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-18T16:12:12.130Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "image" character varying, "productId" bigint, "user_id" bigint, CONSTRAINT "REL_f091e86a234693a49084b4c2c8" UNIQUE ("user_id"), CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-01-18T16:12:12.153Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "totalItem" bigint, "productId" bigint, "totalAmount" bigint, "paymentStatus" "public"."cart_details_paymentstatus_enum" NOT NULL, "cart_id" bigint, "product_id" bigint, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-01-18T16:12:12.162Z][QUERY]: ALTER TABLE "product" ADD CONSTRAINT "FK_329b8ae12068b23da547d3b4798" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T16:12:12.165Z][QUERY]: ALTER TABLE "cart" ADD CONSTRAINT "FK_f091e86a234693a49084b4c2c86" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T16:12:12.167Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_c81e3af806614bbf45024de3ca4" FOREIGN KEY ("cart_id") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T16:12:12.168Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_9c56e71ba578cd23b493f4d1394" FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T16:12:12.170Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-01-18T16:12:12.191Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1705594315829,"Sh1705594315829"]
+[2024-01-18T16:12:12.194Z]Migration Sh1705594315829 has been  executed successfully.
+[2024-01-18T16:12:12.194Z][QUERY]: COMMIT
+[2024-01-18T17:52:54.291Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T17:52:54.293Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T17:52:55.220Z][QUERY]: SELECT version();
+[2024-01-18T17:52:55.225Z][QUERY]: SELECT version();
+[2024-01-18T17:52:55.226Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-18T17:52:55.231Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-01-18T17:52:55.247Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-18T17:52:55.248Z]No migrations are pending
+[2024-01-18T17:53:22.949Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T17:53:22.950Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-18T17:53:23.900Z][QUERY]: SELECT version();
+[2024-01-18T17:53:23.904Z][QUERY]: SELECT version();
+[2024-01-18T17:53:23.905Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-18T17:53:23.910Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-18T17:53:23.911Z]0 migrations are already loaded in the database.
+[2024-01-18T17:53:23.912Z]1 migrations were found in the source code.
+[2024-01-18T17:53:23.912Z]1 migrations are new migrations must be executed.
+[2024-01-18T17:53:23.912Z][QUERY]: START TRANSACTION
+[2024-01-18T17:53:23.912Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-18T17:53:23.925Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-18T17:53:23.934Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "totalItem" bigint, "userId" bigint, "image" character varying, CONSTRAINT "REL_756f53ab9466eb52a52619ee01" UNIQUE ("userId"), CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-01-18T17:53:23.946Z][QUERY]: CREATE TABLE "order" ("cartId" BIGSERIAL NOT NULL, "isPaid" character varying, "orderDate" date, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, CONSTRAINT "PK_fe3963d525b2ee03ba471953a7c" PRIMARY KEY ("cartId"))
+[2024-01-18T17:53:23.954Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint NOT NULL, "price" numeric NOT NULL, "createdAt" numeric NOT NULL, "item" numeric NOT NULL, "updateAt" numeric NOT NULL, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-01-18T17:53:23.963Z][QUERY]: ALTER TABLE "product" ADD CONSTRAINT "FK_329b8ae12068b23da547d3b4798" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T17:53:23.965Z][QUERY]: ALTER TABLE "cart" ADD CONSTRAINT "FK_756f53ab9466eb52a52619ee019" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T17:53:23.966Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-18T17:53:23.966Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-01-18T17:53:23.978Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1705600382147,"Sh1705600382147"]
+[2024-01-18T17:53:23.980Z]Migration Sh1705600382147 has been  executed successfully.
+[2024-01-18T17:53:23.980Z][QUERY]: COMMIT
+[2024-01-23T16:05:22.624Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-23T16:05:22.629Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-23T16:05:23.906Z][QUERY]: SELECT version();
+[2024-01-23T16:05:23.908Z][QUERY]: SELECT version();
+[2024-01-23T16:05:23.909Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-23T16:05:23.916Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-23T16:05:23.919Z]1 migrations are already loaded in the database.
+[2024-01-23T16:05:23.919Z]2 migrations were found in the source code.
+[2024-01-23T16:05:23.919Z]Sh1705600382147 is the last executed migration. It was executed on Thu Jan 18 2024 18:53:02 GMT+0100 (West Africa Standard Time).
+[2024-01-23T16:05:23.919Z]1 migrations are new migrations must be executed.
+[2024-01-23T16:05:23.920Z][QUERY]: START TRANSACTION
+[2024-01-23T16:05:23.921Z][QUERY]: ALTER TYPE "public"."product_productcategory_enum" RENAME TO "product_productcategory_enum_old"
+[2024-01-23T16:05:23.923Z][QUERY]: CREATE TYPE "public"."product_productcategory_enum" AS ENUM('electronics', 'clothing', 'sports_and_outdoor', 'footwear', 'books')
+[2024-01-23T16:05:23.931Z][QUERY]: ALTER TABLE "product" ALTER COLUMN "productCategory" TYPE "public"."product_productcategory_enum" USING "productCategory"::"text"::"public"."product_productcategory_enum"
+[2024-01-23T16:05:23.954Z][QUERY]: DROP TYPE "public"."product_productcategory_enum_old"
+[2024-01-23T16:05:23.955Z][QUERY]: ALTER TYPE "public"."order_deliverystatus_enum" RENAME TO "order_deliverystatus_enum_old"
+[2024-01-23T16:05:23.956Z][QUERY]: CREATE TYPE "public"."order_deliverystatus_enum" AS ENUM('delivered', 'pending')
+[2024-01-23T16:05:23.957Z][QUERY]: ALTER TABLE "order" ALTER COLUMN "deliveryStatus" TYPE "public"."order_deliverystatus_enum" USING "deliveryStatus"::"text"::"public"."order_deliverystatus_enum"
+[2024-01-23T16:05:23.973Z][QUERY]: DROP TYPE "public"."order_deliverystatus_enum_old"
+[2024-01-23T16:05:23.979Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1706025893821,"Sh1706025893821"]
+[2024-01-23T16:05:23.986Z]Migration Sh1706025893821 has been  executed successfully.
+[2024-01-23T16:05:23.987Z][QUERY]: COMMIT
+[2024-01-29T18:36:31.533Z][FAILED QUERY]: INSERT INTO "cart"("description", "price", "quantity", "totalItem", "userId", "image") VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, $1, DEFAULT) RETURNING "id" -- PARAMETERS: [1]
+[2024-01-29T18:36:31.533Z][QUERY ERROR]: error: duplicate key value violates unique constraint "REL_756f53ab9466eb52a52619ee01"
+[2024-01-29T18:43:22.444Z][FAILED QUERY]: INSERT INTO "cart"("description", "price", "quantity", "totalItem", "userId", "image") VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, $1, DEFAULT) RETURNING "id" -- PARAMETERS: [2]
+[2024-01-29T18:43:22.444Z][QUERY ERROR]: error: duplicate key value violates unique constraint "REL_756f53ab9466eb52a52619ee01"
+[2024-01-29T18:45:19.386Z][FAILED QUERY]: INSERT INTO "cart"("description", "price", "quantity", "totalItem", "userId", "image") VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, $1, DEFAULT) RETURNING "id" -- PARAMETERS: [3]
+[2024-01-29T18:45:19.386Z][QUERY ERROR]: error: insert or update on table "cart" violates foreign key constraint "FK_756f53ab9466eb52a52619ee019"
+[2024-01-30T09:00:23.085Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:00:23.088Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:00:24.109Z][QUERY]: SELECT version();
+[2024-01-30T09:00:24.112Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-30T09:00:24.117Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-01-30T09:00:24.124Z][QUERY]: SELECT version();
+[2024-01-30T09:00:24.156Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-30T09:00:24.157Z]0 migrations are already loaded in the database.
+[2024-01-30T09:00:24.157Z]3 migrations were found in the source code.
+[2024-01-30T09:00:24.157Z]3 migrations are new migrations must be executed.
+[2024-01-30T09:00:24.157Z][QUERY]: START TRANSACTION
+[2024-01-30T09:00:24.158Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-30T09:00:24.168Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-30T09:00:24.177Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "totalItem" bigint, "userId" bigint, "image" character varying, CONSTRAINT "REL_756f53ab9466eb52a52619ee01" UNIQUE ("userId"), CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-01-30T09:00:24.194Z][QUERY]: CREATE TABLE "order" ("cartId" BIGSERIAL NOT NULL, "isPaid" character varying, "orderDate" date, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, CONSTRAINT "PK_fe3963d525b2ee03ba471953a7c" PRIMARY KEY ("cartId"))
+[2024-01-30T09:00:24.204Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint NOT NULL, "price" numeric NOT NULL, "createdAt" numeric NOT NULL, "item" numeric NOT NULL, "updateAt" numeric NOT NULL, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-01-30T09:00:24.215Z][QUERY]: ALTER TABLE "product" ADD CONSTRAINT "FK_329b8ae12068b23da547d3b4798" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-30T09:00:24.221Z][QUERY]: ALTER TABLE "cart" ADD CONSTRAINT "FK_756f53ab9466eb52a52619ee019" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-30T09:00:24.223Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-30T09:00:24.224Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-01-30T09:00:24.237Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1705600382147,"Sh1705600382147"]
+[2024-01-30T09:00:24.240Z]Migration Sh1705600382147 has been  executed successfully.
+[2024-01-30T09:00:24.240Z][QUERY]: ALTER TYPE "public"."product_productcategory_enum" RENAME TO "product_productcategory_enum_old"
+[2024-01-30T09:00:24.241Z][QUERY]: CREATE TYPE "public"."product_productcategory_enum" AS ENUM('electronics', 'clothing', 'sports_and_outdoor', 'footwear', 'books')
+[2024-01-30T09:00:24.244Z][QUERY]: ALTER TABLE "product" ALTER COLUMN "productCategory" TYPE "public"."product_productcategory_enum" USING "productCategory"::"text"::"public"."product_productcategory_enum"
+[2024-01-30T09:00:24.257Z][QUERY]: DROP TYPE "public"."product_productcategory_enum_old"
+[2024-01-30T09:00:24.258Z][QUERY]: ALTER TYPE "public"."order_deliverystatus_enum" RENAME TO "order_deliverystatus_enum_old"
+[2024-01-30T09:00:24.259Z][QUERY]: CREATE TYPE "public"."order_deliverystatus_enum" AS ENUM('delivered', 'pending')
+[2024-01-30T09:00:24.260Z][QUERY]: ALTER TABLE "order" ALTER COLUMN "deliveryStatus" TYPE "public"."order_deliverystatus_enum" USING "deliveryStatus"::"text"::"public"."order_deliverystatus_enum"
+[2024-01-30T09:00:24.270Z][QUERY]: DROP TYPE "public"."order_deliverystatus_enum_old"
+[2024-01-30T09:00:24.271Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1706025893821,"Sh1706025893821"]
+[2024-01-30T09:00:24.272Z]Migration Sh1706025893821 has been  executed successfully.
+[2024-01-30T09:00:24.272Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-30T09:00:24.274Z][FAILED QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-30T09:00:24.274Z][QUERY ERROR]: error: relation "user" already exists
+[2024-01-30T09:00:24.274Z]Migration "Sh1706605166388" failed, error: relation "user" already exists
+[2024-01-30T09:00:24.274Z][QUERY]: ROLLBACK
+[2024-01-30T09:02:35.948Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:02:35.949Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:04:12.610Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:04:12.611Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:04:13.618Z][QUERY]: SELECT version();
+[2024-01-30T09:04:13.634Z][QUERY]: SELECT version();
+[2024-01-30T09:04:13.635Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-30T09:04:13.640Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-30T09:04:13.642Z][FAILED QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-30T09:04:13.642Z][QUERY ERROR]: error: column "id" does not exist
+[2024-01-30T09:06:08.881Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:06:08.883Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:06:09.959Z][QUERY]: SELECT version();
+[2024-01-30T09:06:09.964Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-30T09:06:09.968Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-01-30T09:06:09.978Z][QUERY]: SELECT version();
+[2024-01-30T09:06:09.986Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-30T09:06:09.987Z]0 migrations are already loaded in the database.
+[2024-01-30T09:06:09.987Z]4 migrations were found in the source code.
+[2024-01-30T09:06:09.987Z]4 migrations are new migrations must be executed.
+[2024-01-30T09:06:09.988Z][QUERY]: START TRANSACTION
+[2024-01-30T09:06:09.988Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-30T09:06:09.998Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-30T09:06:10.007Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "totalItem" bigint, "userId" bigint, "image" character varying, CONSTRAINT "REL_756f53ab9466eb52a52619ee01" UNIQUE ("userId"), CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-01-30T09:06:10.022Z][QUERY]: CREATE TABLE "order" ("cartId" BIGSERIAL NOT NULL, "isPaid" character varying, "orderDate" date, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, CONSTRAINT "PK_fe3963d525b2ee03ba471953a7c" PRIMARY KEY ("cartId"))
+[2024-01-30T09:06:10.031Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint NOT NULL, "price" numeric NOT NULL, "createdAt" numeric NOT NULL, "item" numeric NOT NULL, "updateAt" numeric NOT NULL, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-01-30T09:06:10.042Z][QUERY]: ALTER TABLE "product" ADD CONSTRAINT "FK_329b8ae12068b23da547d3b4798" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-30T09:06:10.044Z][QUERY]: ALTER TABLE "cart" ADD CONSTRAINT "FK_756f53ab9466eb52a52619ee019" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-30T09:06:10.045Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-30T09:06:10.046Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-01-30T09:06:10.058Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1705600382147,"Sh1705600382147"]
+[2024-01-30T09:06:10.059Z]Migration Sh1705600382147 has been  executed successfully.
+[2024-01-30T09:06:10.059Z][QUERY]: ALTER TYPE "public"."product_productcategory_enum" RENAME TO "product_productcategory_enum_old"
+[2024-01-30T09:06:10.060Z][QUERY]: CREATE TYPE "public"."product_productcategory_enum" AS ENUM('electronics', 'clothing', 'sports_and_outdoor', 'footwear', 'books')
+[2024-01-30T09:06:10.060Z][QUERY]: ALTER TABLE "product" ALTER COLUMN "productCategory" TYPE "public"."product_productcategory_enum" USING "productCategory"::"text"::"public"."product_productcategory_enum"
+[2024-01-30T09:06:10.071Z][QUERY]: DROP TYPE "public"."product_productcategory_enum_old"
+[2024-01-30T09:06:10.072Z][QUERY]: ALTER TYPE "public"."order_deliverystatus_enum" RENAME TO "order_deliverystatus_enum_old"
+[2024-01-30T09:06:10.072Z][QUERY]: CREATE TYPE "public"."order_deliverystatus_enum" AS ENUM('delivered', 'pending')
+[2024-01-30T09:06:10.073Z][QUERY]: ALTER TABLE "order" ALTER COLUMN "deliveryStatus" TYPE "public"."order_deliverystatus_enum" USING "deliveryStatus"::"text"::"public"."order_deliverystatus_enum"
+[2024-01-30T09:06:10.082Z][QUERY]: DROP TYPE "public"."order_deliverystatus_enum_old"
+[2024-01-30T09:06:10.083Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1706025893821,"Sh1706025893821"]
+[2024-01-30T09:06:10.084Z]Migration Sh1706025893821 has been  executed successfully.
+[2024-01-30T09:06:10.084Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-30T09:06:10.085Z][FAILED QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-30T09:06:10.085Z][QUERY ERROR]: error: relation "user" already exists
+[2024-01-30T09:06:10.085Z]Migration "Sh1706605166388" failed, error: relation "user" already exists
+[2024-01-30T09:06:10.085Z][QUERY]: ROLLBACK
+[2024-01-30T09:09:54.836Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:09:54.837Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:09:55.931Z][QUERY]: SELECT version();
+[2024-01-30T09:09:55.933Z][QUERY]: SELECT version();
+[2024-01-30T09:09:55.935Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-30T09:09:55.940Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-01-30T09:09:55.955Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-30T09:09:55.956Z]0 migrations are already loaded in the database.
+[2024-01-30T09:09:55.956Z]4 migrations were found in the source code.
+[2024-01-30T09:09:55.956Z]4 migrations are new migrations must be executed.
+[2024-01-30T09:09:55.957Z][QUERY]: START TRANSACTION
+[2024-01-30T09:09:55.957Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, "userId" bigint, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-30T09:09:55.967Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-30T09:09:55.977Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "totalItem" bigint, "userId" bigint, "image" character varying, CONSTRAINT "REL_756f53ab9466eb52a52619ee01" UNIQUE ("userId"), CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-01-30T09:09:55.990Z][QUERY]: CREATE TABLE "order" ("cartId" BIGSERIAL NOT NULL, "isPaid" character varying, "orderDate" date, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, CONSTRAINT "PK_fe3963d525b2ee03ba471953a7c" PRIMARY KEY ("cartId"))
+[2024-01-30T09:09:55.998Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint NOT NULL, "price" numeric NOT NULL, "createdAt" numeric NOT NULL, "item" numeric NOT NULL, "updateAt" numeric NOT NULL, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-01-30T09:09:56.008Z][QUERY]: ALTER TABLE "product" ADD CONSTRAINT "FK_329b8ae12068b23da547d3b4798" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-30T09:09:56.011Z][QUERY]: ALTER TABLE "cart" ADD CONSTRAINT "FK_756f53ab9466eb52a52619ee019" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-30T09:09:56.013Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-30T09:09:56.014Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-01-30T09:09:56.027Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1705600382147,"Sh1705600382147"]
+[2024-01-30T09:09:56.029Z]Migration Sh1705600382147 has been  executed successfully.
+[2024-01-30T09:09:56.029Z][QUERY]: ALTER TYPE "public"."product_productcategory_enum" RENAME TO "product_productcategory_enum_old"
+[2024-01-30T09:09:56.030Z][QUERY]: CREATE TYPE "public"."product_productcategory_enum" AS ENUM('electronics', 'clothing', 'sports_and_outdoor', 'footwear', 'books')
+[2024-01-30T09:09:56.031Z][QUERY]: ALTER TABLE "product" ALTER COLUMN "productCategory" TYPE "public"."product_productcategory_enum" USING "productCategory"::"text"::"public"."product_productcategory_enum"
+[2024-01-30T09:09:56.041Z][QUERY]: DROP TYPE "public"."product_productcategory_enum_old"
+[2024-01-30T09:09:56.041Z][QUERY]: ALTER TYPE "public"."order_deliverystatus_enum" RENAME TO "order_deliverystatus_enum_old"
+[2024-01-30T09:09:56.042Z][QUERY]: CREATE TYPE "public"."order_deliverystatus_enum" AS ENUM('delivered', 'pending')
+[2024-01-30T09:09:56.042Z][QUERY]: ALTER TABLE "order" ALTER COLUMN "deliveryStatus" TYPE "public"."order_deliverystatus_enum" USING "deliveryStatus"::"text"::"public"."order_deliverystatus_enum"
+[2024-01-30T09:09:56.052Z][QUERY]: DROP TYPE "public"."order_deliverystatus_enum_old"
+[2024-01-30T09:09:56.054Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1706025893821,"Sh1706025893821"]
+[2024-01-30T09:09:56.054Z]Migration Sh1706025893821 has been  executed successfully.
+[2024-01-30T09:09:56.054Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-30T09:09:56.056Z][FAILED QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-30T09:09:56.056Z][QUERY ERROR]: error: relation "user" already exists
+[2024-01-30T09:09:56.057Z]Migration "Sh1706605166388" failed, error: relation "user" already exists
+[2024-01-30T09:09:56.057Z][QUERY]: ROLLBACK
+[2024-01-30T09:18:25.970Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:18:25.972Z][QUERY]: SELECT * FROM current_schema()
+[2024-01-30T09:18:26.939Z][QUERY]: SELECT version();
+[2024-01-30T09:18:26.943Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-01-30T09:18:26.947Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-01-30T09:18:26.955Z][QUERY]: SELECT version();
+[2024-01-30T09:18:26.963Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-01-30T09:18:26.964Z]0 migrations are already loaded in the database.
+[2024-01-30T09:18:26.964Z]1 migrations were found in the source code.
+[2024-01-30T09:18:26.965Z]1 migrations are new migrations must be executed.
+[2024-01-30T09:18:26.965Z][QUERY]: START TRANSACTION
+[2024-01-30T09:18:26.965Z][QUERY]: CREATE TYPE "public"."profile_collection_profiletype_enum" AS ENUM('entity_user_profile', 'entity_subscriber_profile')
+[2024-01-30T09:18:26.966Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-01-30T09:18:26.972Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-01-30T09:18:26.981Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-01-30T09:18:26.988Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "totalItem" bigint, "userId" integer, "image" character varying, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-01-30T09:18:26.996Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint NOT NULL, "price" numeric NOT NULL, "createdAt" numeric NOT NULL, "item" numeric NOT NULL, "updateAt" numeric NOT NULL, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-01-30T09:18:27.004Z][QUERY]: CREATE TABLE "order" ("cartId" BIGSERIAL NOT NULL, "isPaid" character varying, "orderDate" date, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, CONSTRAINT "PK_fe3963d525b2ee03ba471953a7c" PRIMARY KEY ("cartId"))
+[2024-01-30T09:18:27.012Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-01-30T09:18:27.014Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-01-30T09:18:27.024Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1706606288398,"Sh1706606288398"]
+[2024-01-30T09:18:27.026Z]Migration Sh1706606288398 has been  executed successfully.
+[2024-01-30T09:18:27.026Z][QUERY]: COMMIT
+[2024-02-01T11:07:43.298Z][FAILED QUERY]: INSERT INTO "cart"("description", "price", "quantity", "totalItem", "userId", "image") VALUES ($1, $2, $3, $4, $5, $6) RETURNING "id" -- PARAMETERS: ["Bag",30,3,7,1,"new upload"]
+[2024-02-01T11:07:43.298Z][QUERY ERROR]: error: relation "cart" does not exist
+[2024-02-01T11:09:15.395Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T11:09:15.397Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T11:09:16.424Z][QUERY]: SELECT version();
+[2024-02-01T11:09:16.445Z][QUERY]: SELECT version();
+[2024-02-01T11:09:16.447Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-01T11:09:16.452Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-01T11:09:16.482Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-01T11:09:16.484Z]0 migrations are already loaded in the database.
+[2024-02-01T11:09:16.484Z]2 migrations were found in the source code.
+[2024-02-01T11:09:16.484Z]2 migrations are new migrations must be executed.
+[2024-02-01T11:09:16.485Z][QUERY]: START TRANSACTION
+[2024-02-01T11:09:16.486Z][QUERY]: CREATE TYPE "public"."profile_collection_profiletype_enum" AS ENUM('entity_user_profile', 'entity_subscriber_profile')
+[2024-02-01T11:09:16.489Z][FAILED QUERY]: CREATE TYPE "public"."profile_collection_profiletype_enum" AS ENUM('entity_user_profile', 'entity_subscriber_profile')
+[2024-02-01T11:09:16.489Z][QUERY ERROR]: error: type "profile_collection_profiletype_enum" already exists
+[2024-02-01T11:09:16.490Z]Migration "Sh1706606288398" failed, error: type "profile_collection_profiletype_enum" already exists
+[2024-02-01T11:09:16.490Z][QUERY]: ROLLBACK
+[2024-02-01T11:10:20.282Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T11:10:20.284Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T11:10:21.230Z][QUERY]: SELECT version();
+[2024-02-01T11:10:21.237Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-01T11:10:21.245Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-01T11:10:21.255Z][QUERY]: SELECT version();
+[2024-02-01T11:10:21.271Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-01T11:10:21.274Z]0 migrations are already loaded in the database.
+[2024-02-01T11:10:21.274Z]2 migrations were found in the source code.
+[2024-02-01T11:10:21.274Z]2 migrations are new migrations must be executed.
+[2024-02-01T11:10:21.275Z][QUERY]: START TRANSACTION
+[2024-02-01T11:10:21.277Z][QUERY]: CREATE TYPE "public"."profile_collection_profiletype_enum" AS ENUM('entity_user_profile', 'entity_subscriber_profile')
+[2024-02-01T11:10:21.279Z][FAILED QUERY]: CREATE TYPE "public"."profile_collection_profiletype_enum" AS ENUM('entity_user_profile', 'entity_subscriber_profile')
+[2024-02-01T11:10:21.279Z][QUERY ERROR]: error: type "profile_collection_profiletype_enum" already exists
+[2024-02-01T11:10:21.280Z]Migration "Sh1706606288398" failed, error: type "profile_collection_profiletype_enum" already exists
+[2024-02-01T11:10:21.280Z][QUERY]: ROLLBACK
+[2024-02-01T11:11:04.404Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T11:11:04.406Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T11:11:05.325Z][QUERY]: SELECT version();
+[2024-02-01T11:11:05.333Z][QUERY]: SELECT version();
+[2024-02-01T11:11:05.334Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-01T11:11:05.340Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-01T11:11:05.341Z]No migrations are pending
+[2024-02-01T11:12:31.645Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T11:12:31.646Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T11:12:32.628Z][QUERY]: SELECT version();
+[2024-02-01T11:12:32.630Z][QUERY]: SELECT version();
+[2024-02-01T11:12:32.632Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-01T11:12:32.636Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-01T11:12:32.656Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-01T11:12:32.657Z]0 migrations are already loaded in the database.
+[2024-02-01T11:12:32.657Z]1 migrations were found in the source code.
+[2024-02-01T11:12:32.657Z]1 migrations are new migrations must be executed.
+[2024-02-01T11:12:32.658Z][QUERY]: START TRANSACTION
+[2024-02-01T11:12:32.659Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-01T11:12:32.667Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-01T11:12:32.680Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-01T11:12:32.705Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-01T11:12:32.718Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-01T11:12:32.729Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "totalItem" bigint, "userId" integer, "image" character varying NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-01T11:12:32.742Z][QUERY]: CREATE TABLE "order" ("cartId" BIGSERIAL NOT NULL, "isPaid" character varying, "orderDate" date, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, CONSTRAINT "PK_fe3963d525b2ee03ba471953a7c" PRIMARY KEY ("cartId"))
+[2024-02-01T11:12:32.753Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint NOT NULL, "price" numeric NOT NULL, "createdAt" numeric NOT NULL, "item" numeric NOT NULL, "updateAt" numeric NOT NULL, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-02-01T11:12:32.766Z][QUERY]: ALTER TABLE "entity_user_profile" ADD CONSTRAINT "FK_19b2f4ff2abd89dbe2b89cf8162" FOREIGN KEY ("entityProfileId") REFERENCES "entity_profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-01T11:12:32.777Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-01T11:12:32.779Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-01T11:12:32.799Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1706785938835,"Sh1706785938835"]
+[2024-02-01T11:12:32.803Z]Migration Sh1706785938835 has been  executed successfully.
+[2024-02-01T11:12:32.803Z][QUERY]: COMMIT
+[2024-02-01T22:21:19.509Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T22:21:19.514Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T22:21:20.476Z][QUERY]: SELECT version();
+[2024-02-01T22:21:20.486Z][QUERY]: SELECT version();
+[2024-02-01T22:21:20.489Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-01T22:21:20.499Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-01T22:21:20.548Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-01T22:21:20.550Z]No migrations are pending
+[2024-02-01T22:24:25.469Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T22:24:25.471Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-01T22:24:26.435Z][QUERY]: SELECT version();
+[2024-02-01T22:24:26.437Z][QUERY]: SELECT version();
+[2024-02-01T22:24:26.439Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-01T22:24:26.443Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-01T22:24:26.471Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-01T22:24:26.474Z]0 migrations are already loaded in the database.
+[2024-02-01T22:24:26.474Z]1 migrations were found in the source code.
+[2024-02-01T22:24:26.475Z]1 migrations are new migrations must be executed.
+[2024-02-01T22:24:26.475Z][QUERY]: START TRANSACTION
+[2024-02-01T22:24:26.477Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-01T22:24:26.491Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-01T22:24:26.535Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-01T22:24:26.555Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "totalItem" bigint, "userId" bigint, "image" character varying NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-01T22:24:26.574Z][QUERY]: CREATE TABLE "order" ("cartId" BIGSERIAL NOT NULL, "isPaid" character varying, "orderDate" date, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, CONSTRAINT "PK_fe3963d525b2ee03ba471953a7c" PRIMARY KEY ("cartId"))
+[2024-02-01T22:24:26.590Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-01T22:24:26.609Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-01T22:24:26.645Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint NOT NULL, "price" numeric NOT NULL, "createdAt" numeric NOT NULL, "item" numeric NOT NULL, "updateAt" numeric NOT NULL, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-02-01T22:24:26.663Z][QUERY]: ALTER TABLE "entity_user_profile" ADD CONSTRAINT "FK_19b2f4ff2abd89dbe2b89cf8162" FOREIGN KEY ("entityProfileId") REFERENCES "entity_profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-01T22:24:26.670Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-01T22:24:26.672Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-01T22:24:26.696Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1706826249055,"Sh1706826249055"]
+[2024-02-01T22:24:26.701Z]Migration Sh1706826249055 has been  executed successfully.
+[2024-02-01T22:24:26.702Z][QUERY]: COMMIT
+[2024-02-02T09:19:52.019Z][FAILED QUERY]: SELECT "User"."id" AS "User_id", "User"."firstName" AS "User_firstName", "User"."lastName" AS "User_lastName", "User"."email" AS "User_email", "User"."password" AS "User_password", "User"."phone" AS "User_phone" FROM "user" "User" WHERE ("User"."email" = $1) LIMIT 1 -- PARAMETERS: ["ibra7@gmail.com"]
+[2024-02-02T09:19:52.019Z][QUERY ERROR]: error: column User.phone does not exist
+[2024-02-02T09:20:54.368Z][FAILED QUERY]: SELECT "User"."id" AS "User_id", "User"."firstName" AS "User_firstName", "User"."lastName" AS "User_lastName", "User"."email" AS "User_email", "User"."password" AS "User_password", "User"."phone" AS "User_phone" FROM "user" "User" WHERE ("User"."email" = $1) LIMIT 1 -- PARAMETERS: ["ibra7@gmail.com"]
+[2024-02-02T09:20:54.368Z][QUERY ERROR]: error: column User.phone does not exist
+[2024-02-02T09:22:06.504Z][FAILED QUERY]: SELECT "User"."id" AS "User_id", "User"."firstName" AS "User_firstName", "User"."lastName" AS "User_lastName", "User"."email" AS "User_email", "User"."password" AS "User_password", "User"."phone" AS "User_phone" FROM "user" "User" WHERE ("User"."email" = $1) LIMIT 1 -- PARAMETERS: ["ibra7@gmail.com"]
+[2024-02-02T09:22:06.504Z][QUERY ERROR]: error: column User.phone does not exist
+[2024-02-05T09:25:26.077Z][FAILED QUERY]: INSERT INTO "order"("isPaid", "orderDate", "deliveryStatus", "paymentStatus") VALUES ($1, $2, $3, $4) RETURNING "cartId" -- PARAMETERS: [true,"2024-02-05","delivered","paid"]
+[2024-02-05T09:25:26.077Z][QUERY ERROR]: error: column "paymentStatus" of relation "order" does not exist
+[2024-02-05T10:01:51.107Z][FAILED QUERY]: INSERT INTO "order"("isPaid", "orderDate", "deliveryStatus") VALUES ($1, $2, $3) RETURNING "userId" -- PARAMETERS: [true,"2024-02-05","delivered"]
+[2024-02-05T10:01:51.108Z][QUERY ERROR]: error: column "userId" does not exist
+[2024-02-05T10:09:36.533Z][FAILED QUERY]: INSERT INTO "order"("isPaid", "orderDate", "deliveryStatus") VALUES ($1, $2, $3) RETURNING "userId" -- PARAMETERS: [true,"2024-02-05","delivered"]
+[2024-02-05T10:09:36.533Z][QUERY ERROR]: error: column "userId" does not exist
+[2024-02-05T10:10:55.418Z][FAILED QUERY]: INSERT INTO "order"("isPaid", "orderDate", "deliveryStatus") VALUES ($1, $2, $3) RETURNING "Id" -- PARAMETERS: [true,"2024-02-05","delivered"]
+[2024-02-05T10:10:55.418Z][QUERY ERROR]: error: column "Id" does not exist
+[2024-02-05T10:11:28.301Z][FAILED QUERY]: INSERT INTO "order"("isPaid", "orderDate", "deliveryStatus") VALUES ($1, $2, $3) RETURNING "id" -- PARAMETERS: [true,"2024-02-05","delivered"]
+[2024-02-05T10:11:28.301Z][QUERY ERROR]: error: column "id" does not exist
+[2024-02-05T10:23:01.340Z][FAILED QUERY]: INSERT INTO "order"("isPaid", "orderDate", "deliveryStatus") VALUES ($1, $2, $3) RETURNING "id" -- PARAMETERS: [true,"2024-02-05","delivered"]
+[2024-02-05T10:23:01.341Z][QUERY ERROR]: error: column "id" does not exist
+[2024-02-05T10:32:40.514Z][FAILED QUERY]: INSERT INTO "order"("isPaid", "orderDate", "deliveryStatus") VALUES ($1, $2, $3) RETURNING "id" -- PARAMETERS: [true,"2024-02-05","delivered"]
+[2024-02-05T10:32:40.514Z][QUERY ERROR]: error: column "id" does not exist
+[2024-02-05T10:33:26.898Z][FAILED QUERY]: INSERT INTO "order"("isPaid", "orderDate", "deliveryStatus") VALUES ($1, $2, $3) RETURNING "id" -- PARAMETERS: [true,"2024-02-05","delivered"]
+[2024-02-05T10:33:26.898Z][QUERY ERROR]: error: column "id" does not exist
+[2024-02-05T14:06:52.521Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-05T14:06:52.526Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-05T14:06:53.491Z][QUERY]: SELECT version();
+[2024-02-05T14:06:53.506Z][QUERY]: SELECT version();
+[2024-02-05T14:06:53.508Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-05T14:06:53.512Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-05T14:06:53.550Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-05T14:06:53.551Z]0 migrations are already loaded in the database.
+[2024-02-05T14:06:53.551Z]1 migrations were found in the source code.
+[2024-02-05T14:06:53.551Z]1 migrations are new migrations must be executed.
+[2024-02-05T14:06:53.552Z][QUERY]: START TRANSACTION
+[2024-02-05T14:06:53.552Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-05T14:06:53.561Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-05T14:06:53.581Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-05T14:06:53.600Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying, "price" bigint, "quantity" bigint, "totalItem" bigint, "userId" bigint, "image" character varying NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-05T14:06:53.617Z][QUERY]: CREATE TYPE "public"."order_paymentstatus_enum" AS ENUM('paid', 'pending')
+[2024-02-05T14:06:53.621Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean, "orderDate" date, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, "paymentStatus" "public"."order_paymentstatus_enum" NOT NULL, "cartId" bigint, CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-05T14:06:53.632Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-05T14:06:53.646Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-05T14:06:53.667Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint, "price" bigint, "createdAt" bigint, "item" bigint, "updateAt" bigint, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-02-05T14:06:53.679Z][QUERY]: ALTER TABLE "entity_user_profile" ADD CONSTRAINT "FK_19b2f4ff2abd89dbe2b89cf8162" FOREIGN KEY ("entityProfileId") REFERENCES "entity_profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-05T14:06:53.683Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-05T14:06:53.685Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-05T14:06:53.707Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1707141997134,"Sh1707141997134"]
+[2024-02-05T14:06:53.711Z]Migration Sh1707141997134 has been  executed successfully.
+[2024-02-05T14:06:53.711Z][QUERY]: COMMIT
+[2024-02-06T13:41:19.385Z][FAILED QUERY]: SELECT "Order"."id" AS "Order_id", "Order"."isPaid" AS "Order_isPaid", "Order"."orderDate" AS "Order_orderDate", "Order"."deliveryStatus" AS "Order_deliveryStatus", "Order"."paymentStatus" AS "Order_paymentStatus", "Order"."cartId" AS "Order_cartId" FROM "order" "Order" WHERE (("Order"."id" = $1)) LIMIT 1 -- PARAMETERS: [null]
+[2024-02-06T13:41:19.385Z][QUERY ERROR]: error: invalid input syntax for type bigint: "NaN"
+[2024-02-06T13:44:01.761Z][FAILED QUERY]: SELECT "Order"."id" AS "Order_id", "Order"."isPaid" AS "Order_isPaid", "Order"."orderDate" AS "Order_orderDate", "Order"."deliveryStatus" AS "Order_deliveryStatus", "Order"."paymentStatus" AS "Order_paymentStatus", "Order"."cartId" AS "Order_cartId" FROM "order" "Order" WHERE (("Order"."id" = $1)) LIMIT 1 -- PARAMETERS: [null]
+[2024-02-06T13:44:01.761Z][QUERY ERROR]: error: invalid input syntax for type bigint: "NaN"
+[2024-02-06T13:52:54.854Z][FAILED QUERY]: SELECT "Order"."id" AS "Order_id", "Order"."isPaid" AS "Order_isPaid", "Order"."orderDate" AS "Order_orderDate", "Order"."deliveryStatus" AS "Order_deliveryStatus", "Order"."paymentStatus" AS "Order_paymentStatus", "Order"."cartId" AS "Order_cartId" FROM "order" "Order" WHERE (("Order"."id" = $1)) LIMIT 1 -- PARAMETERS: [null]
+[2024-02-06T13:52:54.854Z][QUERY ERROR]: error: invalid input syntax for type bigint: "NaN"
+[2024-02-06T14:51:47.296Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-06T14:51:47.297Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-06T14:51:48.135Z][QUERY]: SELECT version();
+[2024-02-06T14:51:48.148Z][QUERY]: SELECT version();
+[2024-02-06T14:51:48.150Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-06T14:51:48.155Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-06T14:51:48.215Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-06T14:51:48.216Z]0 migrations are already loaded in the database.
+[2024-02-06T14:51:48.217Z]1 migrations were found in the source code.
+[2024-02-06T14:51:48.217Z]1 migrations are new migrations must be executed.
+[2024-02-06T14:51:48.217Z][QUERY]: START TRANSACTION
+[2024-02-06T14:51:48.218Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-06T14:51:48.226Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-06T14:51:48.237Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-06T14:51:48.248Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-06T14:51:48.257Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-06T14:51:48.274Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying NOT NULL, "price" bigint NOT NULL, "quantity" bigint NOT NULL, "totalItem" bigint NOT NULL, "userId" bigint NOT NULL, "image" character varying NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-06T14:51:48.282Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, "paymentStatus" "public"."order_paymentstatus_enum" NOT NULL, "cartId" bigint NOT NULL, CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-06T14:51:48.288Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint, "price" bigint, "createdAt" bigint, "item" bigint, "updateAt" bigint, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-02-06T14:51:48.292Z][QUERY]: ALTER TABLE "entity_user_profile" ADD CONSTRAINT "FK_19b2f4ff2abd89dbe2b89cf8162" FOREIGN KEY ("entityProfileId") REFERENCES "entity_profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-06T14:51:48.297Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-06T14:51:48.298Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-06T14:51:48.310Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1707231089829,"Sh1707231089829"]
+[2024-02-06T14:51:48.312Z]Migration Sh1707231089829 has been  executed successfully.
+[2024-02-06T14:51:48.312Z][QUERY]: COMMIT
+[2024-02-06T15:13:16.945Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-06T15:13:16.947Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-06T15:13:17.836Z][QUERY]: SELECT version();
+[2024-02-06T15:13:17.839Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-06T15:13:17.844Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-06T15:13:17.854Z][QUERY]: SELECT version();
+[2024-02-06T15:13:17.861Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-06T15:13:17.862Z]0 migrations are already loaded in the database.
+[2024-02-06T15:13:17.862Z]1 migrations were found in the source code.
+[2024-02-06T15:13:17.862Z]1 migrations are new migrations must be executed.
+[2024-02-06T15:13:17.863Z][QUERY]: START TRANSACTION
+[2024-02-06T15:13:17.863Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-06T15:13:17.869Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-06T15:13:17.878Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-06T15:13:17.888Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying NOT NULL, "price" bigint NOT NULL, "quantity" bigint NOT NULL, "totalItem" bigint NOT NULL, "userId" bigint NOT NULL, "image" character varying NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-06T15:13:17.897Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, "paymentStatus" "public"."order_paymentstatus_enum" NOT NULL, "cartId" bigint NOT NULL, CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-06T15:13:17.902Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-06T15:13:17.911Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-06T15:13:17.927Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint, "price" bigint, "createdAt" bigint, "item" bigint, "updateAt" bigint, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-02-06T15:13:17.932Z][QUERY]: ALTER TABLE "entity_user_profile" ADD CONSTRAINT "FK_19b2f4ff2abd89dbe2b89cf8162" FOREIGN KEY ("entityProfileId") REFERENCES "entity_profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-06T15:13:17.934Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-06T15:13:17.935Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-06T15:13:17.946Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1707232378567,"Sh1707232378567"]
+[2024-02-06T15:13:17.948Z]Migration Sh1707232378567 has been  executed successfully.
+[2024-02-06T15:13:17.948Z][QUERY]: COMMIT
+[2024-02-07T10:20:02.695Z][FAILED QUERY]: SELECT "Order"."id" AS "Order_id", "Order"."isPaid" AS "Order_isPaid", "Order"."orderDate" AS "Order_orderDate", "Order"."deliveryStatus" AS "Order_deliveryStatus", "Order"."paymentStatus" AS "Order_paymentStatus", "Order"."cartId" AS "Order_cartId" FROM "order" "Order" WHERE (("Order"."cartId" = $1)) LIMIT 1 -- PARAMETERS: [{"cart":"2"}]
+[2024-02-07T10:20:02.695Z][QUERY ERROR]: error: invalid input syntax for type bigint: "{"cart":"2"}"
+[2024-02-07T10:20:41.765Z][FAILED QUERY]: SELECT "Order"."id" AS "Order_id", "Order"."isPaid" AS "Order_isPaid", "Order"."orderDate" AS "Order_orderDate", "Order"."deliveryStatus" AS "Order_deliveryStatus", "Order"."paymentStatus" AS "Order_paymentStatus", "Order"."cartId" AS "Order_cartId" FROM "order" "Order" WHERE (("Order"."cartId" = $1)) LIMIT 1 -- PARAMETERS: [{"cart":"2"}]
+[2024-02-07T10:20:41.766Z][QUERY ERROR]: error: invalid input syntax for type bigint: "{"cart":"2"}"
+[2024-02-07T10:22:30.353Z][FAILED QUERY]: SELECT "Order"."id" AS "Order_id", "Order"."isPaid" AS "Order_isPaid", "Order"."orderDate" AS "Order_orderDate", "Order"."deliveryStatus" AS "Order_deliveryStatus", "Order"."paymentStatus" AS "Order_paymentStatus", "Order"."cartId" AS "Order_cartId" FROM "order" "Order" WHERE (("Order"."cartId" = $1)) LIMIT 1 -- PARAMETERS: [{"id":"1"}]
+[2024-02-07T10:22:30.353Z][QUERY ERROR]: error: invalid input syntax for type bigint: "{"id":"1"}"
+[2024-02-08T12:59:29.622Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-08T12:59:29.626Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-08T12:59:30.785Z][QUERY]: SELECT version();
+[2024-02-08T12:59:30.792Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-08T12:59:30.799Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-08T12:59:30.811Z][QUERY]: SELECT version();
+[2024-02-08T12:59:30.884Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-08T12:59:30.889Z]0 migrations are already loaded in the database.
+[2024-02-08T12:59:30.889Z]2 migrations were found in the source code.
+[2024-02-08T12:59:30.889Z]2 migrations are new migrations must be executed.
+[2024-02-08T12:59:30.890Z][QUERY]: START TRANSACTION
+[2024-02-08T12:59:30.893Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-08T12:59:30.907Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-08T12:59:30.919Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-08T12:59:30.936Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying NOT NULL, "price" bigint NOT NULL, "quantity" bigint NOT NULL, "totalItem" bigint NOT NULL, "userId" bigint NOT NULL, "image" character varying NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-08T12:59:30.946Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, "paymentStatus" "public"."order_paymentstatus_enum" NOT NULL, "cartId" bigint NOT NULL, CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-08T12:59:30.952Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-08T12:59:30.963Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-08T12:59:30.983Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint, "price" bigint, "createdAt" bigint, "item" bigint, "updateAt" bigint, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-02-08T12:59:30.990Z][QUERY]: ALTER TABLE "entity_user_profile" ADD CONSTRAINT "FK_19b2f4ff2abd89dbe2b89cf8162" FOREIGN KEY ("entityProfileId") REFERENCES "entity_profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-08T12:59:31.005Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-08T12:59:31.008Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-08T12:59:31.021Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1707232378567,"Sh1707232378567"]
+[2024-02-08T12:59:31.023Z]Migration Sh1707232378567 has been  executed successfully.
+[2024-02-08T12:59:31.023Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-08T12:59:31.026Z][FAILED QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-08T12:59:31.026Z][QUERY ERROR]: error: relation "profile_collection" already exists
+[2024-02-08T12:59:31.026Z]Migration "Sh1707397121003" failed, error: relation "profile_collection" already exists
+[2024-02-08T12:59:31.027Z][QUERY]: ROLLBACK
+[2024-02-08T13:00:52.122Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-08T13:00:52.124Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-08T13:00:54.074Z][QUERY]: SELECT version();
+[2024-02-08T13:00:54.097Z][QUERY]: SELECT version();
+[2024-02-08T13:00:54.100Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-08T13:00:54.107Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-08T13:00:54.109Z]0 migrations are already loaded in the database.
+[2024-02-08T13:00:54.109Z]1 migrations were found in the source code.
+[2024-02-08T13:00:54.109Z]1 migrations are new migrations must be executed.
+[2024-02-08T13:00:54.110Z][QUERY]: START TRANSACTION
+[2024-02-08T13:00:54.111Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-08T13:00:54.125Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-08T13:00:54.136Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-08T13:00:54.147Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying NOT NULL, "price" bigint NOT NULL, "quantity" bigint NOT NULL, "totalItem" bigint NOT NULL, "userId" bigint NOT NULL, "image" character varying NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-08T13:00:54.158Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL DEFAULT false, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum", "paymentStatus" "public"."order_paymentstatus_enum", "cartId" bigint NOT NULL, CONSTRAINT "REL_fe3963d525b2ee03ba471953a7" UNIQUE ("cartId"), CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-08T13:00:54.170Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-08T13:00:54.180Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-08T13:00:54.198Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint, "price" bigint, "createdAt" bigint, "item" bigint, "updateAt" bigint, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-02-08T13:00:54.206Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("userId") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-08T13:00:54.209Z][FAILED QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("userId") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-08T13:00:54.209Z][QUERY ERROR]: error: there is no unique constraint matching given keys for referenced table "cart"
+[2024-02-08T13:00:54.210Z]Migration "Sh1707397235150" failed, error: there is no unique constraint matching given keys for referenced table "cart"
+[2024-02-08T13:00:54.211Z][QUERY]: ROLLBACK
+[2024-02-08T13:10:30.442Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-08T13:10:30.444Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-08T13:10:31.435Z][QUERY]: SELECT version();
+[2024-02-08T13:10:31.437Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-08T13:10:31.443Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-08T13:10:31.444Z]0 migrations are already loaded in the database.
+[2024-02-08T13:10:31.445Z]1 migrations were found in the source code.
+[2024-02-08T13:10:31.445Z]1 migrations are new migrations must be executed.
+[2024-02-08T13:10:31.445Z][QUERY]: START TRANSACTION
+[2024-02-08T13:10:31.446Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-08T13:10:31.454Z][QUERY]: SELECT version();
+[2024-02-08T13:10:31.458Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying, "lastName" character varying, "email" character varying, "password" character varying, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-08T13:10:31.468Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying, "description" character varying, "brand" character varying, "price" integer, "tag" integer, "quantity" integer, "rating" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-08T13:10:31.481Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-08T13:10:31.491Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-08T13:10:31.513Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "description" character varying NOT NULL, "price" bigint NOT NULL, "quantity" bigint NOT NULL, "totalItem" bigint NOT NULL, "userId" bigint NOT NULL, "image" character varying NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-08T13:10:31.524Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL DEFAULT false, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum", "paymentStatus" "public"."order_paymentstatus_enum", "cartId" bigint NOT NULL, CONSTRAINT "REL_fe3963d525b2ee03ba471953a7" UNIQUE ("cartId"), CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-08T13:10:31.535Z][QUERY]: CREATE TABLE "cart_details" ("id" BIGSERIAL NOT NULL, "cartId" bigint, "productId" bigint, "price" bigint, "createdAt" bigint, "item" bigint, "updateAt" bigint, CONSTRAINT "PK_6ac8b222cc04b34e7c14c1205cf" PRIMARY KEY ("id"))
+[2024-02-08T13:10:31.541Z][QUERY]: ALTER TABLE "entity_user_profile" ADD CONSTRAINT "FK_19b2f4ff2abd89dbe2b89cf8162" FOREIGN KEY ("entityProfileId") REFERENCES "entity_profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-08T13:10:31.543Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-08T13:10:31.544Z][QUERY]: ALTER TABLE "cart_details" ADD CONSTRAINT "FK_213b59b40899244918966811c7d" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-08T13:10:31.545Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-08T13:10:31.556Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1707397819093,"Sh1707397819093"]
+[2024-02-08T13:10:31.558Z]Migration Sh1707397819093 has been  executed successfully.
+[2024-02-08T13:10:31.558Z][QUERY]: COMMIT
+[2024-02-08T13:18:03.030Z][FAILED QUERY]: INSERT INTO "order"("isPaid", "orderDate", "deliveryStatus", "paymentStatus", "cartId") VALUES ($1, $2, $3, $4, $5) RETURNING "id", "isPaid" -- PARAMETERS: [true,"2024-02-07","pending","pending","6"]
+[2024-02-08T13:18:03.030Z][QUERY ERROR]: error: insert or update on table "order" violates foreign key constraint "FK_fe3963d525b2ee03ba471953a7c"
+[2024-02-14T10:32:58.522Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-14T10:32:58.527Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-14T10:32:59.392Z][QUERY]: SELECT version();
+[2024-02-14T10:32:59.406Z][QUERY]: SELECT version();
+[2024-02-14T10:32:59.407Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-14T10:32:59.411Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-14T10:32:59.493Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-14T10:32:59.495Z]0 migrations are already loaded in the database.
+[2024-02-14T10:32:59.495Z]1 migrations were found in the source code.
+[2024-02-14T10:32:59.495Z]1 migrations are new migrations must be executed.
+[2024-02-14T10:32:59.496Z][QUERY]: START TRANSACTION
+[2024-02-14T10:32:59.497Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-14T10:32:59.518Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-14T10:32:59.548Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "totalPrice" numeric NOT NULL DEFAULT '0', "totalItems" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" bigint NOT NULL, "productId" bigint NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-14T10:32:59.566Z][QUERY]: CREATE TABLE "cart_product" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, "quantity" integer NOT NULL, "price" numeric NOT NULL, "image" character varying NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updateAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_f3196199c74660974cd827c0d0b" PRIMARY KEY ("cartId", "productId"))
+[2024-02-14T10:32:59.583Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, "description" character varying NOT NULL, "brand" character varying NOT NULL, "price" numeric NOT NULL, "tag" character varying, "stockQuantity" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-14T10:32:59.602Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "email" character varying NOT NULL, "password" character varying NOT NULL, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-14T10:32:59.619Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-14T10:32:59.632Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL DEFAULT false, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum", "paymentStatus" "public"."order_paymentstatus_enum", "cartId" bigint NOT NULL, CONSTRAINT "REL_fe3963d525b2ee03ba471953a7" UNIQUE ("cartId"), CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-14T10:32:59.648Z][QUERY]: ALTER TABLE "entity_user_profile" ADD CONSTRAINT "FK_19b2f4ff2abd89dbe2b89cf8162" FOREIGN KEY ("entityProfileId") REFERENCES "entity_profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T10:32:59.659Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_139f8024067696fe5a8400ebda2" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T10:32:59.661Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_4f1b0c66f4e0b4610e14ca42e5c" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T10:32:59.663Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T10:32:59.665Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-14T10:32:59.687Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1707906748429,"Sh1707906748429"]
+[2024-02-14T10:32:59.691Z]Migration Sh1707906748429 has been  executed successfully.
+[2024-02-14T10:32:59.691Z][QUERY]: COMMIT
+[2024-02-14T10:54:19.766Z][FAILED QUERY]: INSERT INTO "cart"("totalPrice", "totalItems", "createdAt", "updatedAt", "userId", "productId") VALUES ($1, $2, DEFAULT, DEFAULT, $3, DEFAULT) RETURNING "id", "totalPrice", "totalItems", "createdAt", "updatedAt" -- PARAMETERS: ["100000","2","1"]
+[2024-02-14T10:54:19.766Z][QUERY ERROR]: error: null value in column "productId" of relation "cart" violates not-null constraint
+[2024-02-14T10:57:43.061Z][FAILED QUERY]: INSERT INTO "cart"("totalPrice", "totalItems", "createdAt", "updatedAt", "userId", "productId") VALUES ($1, $2, DEFAULT, DEFAULT, $3, DEFAULT) RETURNING "id", "totalPrice", "totalItems", "createdAt", "updatedAt" -- PARAMETERS: ["100000","2","1"]
+[2024-02-14T10:57:43.061Z][QUERY ERROR]: error: null value in column "productId" of relation "cart" violates not-null constraint
+[2024-02-14T11:03:07.634Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-14T11:03:07.635Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-14T11:03:08.457Z][QUERY]: SELECT version();
+[2024-02-14T11:03:08.459Z][QUERY]: SELECT version();
+[2024-02-14T11:03:08.460Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-14T11:03:08.464Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-14T11:03:08.514Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-14T11:03:08.517Z]0 migrations are already loaded in the database.
+[2024-02-14T11:03:08.517Z]1 migrations were found in the source code.
+[2024-02-14T11:03:08.517Z]1 migrations are new migrations must be executed.
+[2024-02-14T11:03:08.518Z][QUERY]: START TRANSACTION
+[2024-02-14T11:03:08.519Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-14T11:03:08.527Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-14T11:03:08.537Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-14T11:03:08.552Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "totalPrice" numeric NOT NULL DEFAULT '0', "totalItems" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" bigint NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-14T11:03:08.560Z][QUERY]: CREATE TABLE "cart_product" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, "quantity" integer NOT NULL, "price" numeric NOT NULL, "image" character varying NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updateAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_f3196199c74660974cd827c0d0b" PRIMARY KEY ("cartId", "productId"))
+[2024-02-14T11:03:08.568Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, "description" character varying NOT NULL, "brand" character varying NOT NULL, "price" numeric NOT NULL, "tag" character varying, "stockQuantity" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-14T11:03:08.577Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "email" character varying NOT NULL, "password" character varying NOT NULL, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-14T11:03:08.585Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL DEFAULT false, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum", "paymentStatus" "public"."order_paymentstatus_enum", "cartId" bigint NOT NULL, CONSTRAINT "REL_fe3963d525b2ee03ba471953a7" UNIQUE ("cartId"), CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-14T11:03:08.592Z][QUERY]: ALTER TABLE "entity_user_profile" ADD CONSTRAINT "FK_19b2f4ff2abd89dbe2b89cf8162" FOREIGN KEY ("entityProfileId") REFERENCES "entity_profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T11:03:08.594Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_139f8024067696fe5a8400ebda2" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T11:03:08.595Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_4f1b0c66f4e0b4610e14ca42e5c" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T11:03:08.595Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T11:03:08.596Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-14T11:03:08.607Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1707908560555,"Sh1707908560555"]
+[2024-02-14T11:03:08.608Z]Migration Sh1707908560555 has been  executed successfully.
+[2024-02-14T11:03:08.609Z][QUERY]: COMMIT
+[2024-02-14T12:08:27.979Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-14T12:08:27.981Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-14T12:08:28.847Z][QUERY]: SELECT version();
+[2024-02-14T12:08:28.861Z][QUERY]: SELECT version();
+[2024-02-14T12:08:28.863Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-14T12:08:28.867Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.885Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-14T12:08:28.886Z]0 migrations are already loaded in the database.
+[2024-02-14T12:08:28.886Z]2 migrations were found in the source code.
+[2024-02-14T12:08:28.886Z]2 migrations are new migrations must be executed.
+[2024-02-14T12:08:28.886Z][QUERY]: START TRANSACTION
+[2024-02-14T12:08:28.887Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.893Z][QUERY]: CREATE TABLE "entity_profile" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_664b32a943f98981b7db3bfaefa" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.901Z][QUERY]: CREATE TABLE "entity_user_profile" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "middleName" character varying, "email" character varying NOT NULL, "phone" character varying, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "isAdmin" boolean NOT NULL DEFAULT false, "entityProfileId" bigint NOT NULL, "phoneCodeId" bigint, CONSTRAINT "UQ_4b5ade5304fa8581cb0af0f9902" UNIQUE ("email"), CONSTRAINT "UQ_76e1a874d4915c7d390fa1c73ba" UNIQUE ("phone"), CONSTRAINT "PK_ed2cc6a17e618276474ac157e6b" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.918Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "totalPrice" numeric NOT NULL DEFAULT '0', "totalItems" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" bigint NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.927Z][QUERY]: CREATE TABLE "cart_product" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, "quantity" integer NOT NULL, "price" numeric NOT NULL, "image" character varying NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updateAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_f3196199c74660974cd827c0d0b" PRIMARY KEY ("cartId", "productId"))
+[2024-02-14T12:08:28.937Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, "description" character varying NOT NULL, "brand" character varying NOT NULL, "price" numeric NOT NULL, "tag" character varying, "stockQuantity" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.945Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "email" character varying NOT NULL, "password" character varying NOT NULL, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.954Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL DEFAULT false, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum", "paymentStatus" "public"."order_paymentstatus_enum", "cartId" bigint NOT NULL, CONSTRAINT "REL_fe3963d525b2ee03ba471953a7" UNIQUE ("cartId"), CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.963Z][QUERY]: ALTER TABLE "entity_user_profile" ADD CONSTRAINT "FK_19b2f4ff2abd89dbe2b89cf8162" FOREIGN KEY ("entityProfileId") REFERENCES "entity_profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T12:08:28.966Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_139f8024067696fe5a8400ebda2" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T12:08:28.967Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_4f1b0c66f4e0b4610e14ca42e5c" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T12:08:28.968Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T12:08:28.969Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.980Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1707908560555,"Sh1707908560555"]
+[2024-02-14T12:08:28.982Z]Migration Sh1707908560555 has been  executed successfully.
+[2024-02-14T12:08:28.982Z][QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.983Z][FAILED QUERY]: CREATE TABLE "profile_collection" ("id" BIGSERIAL NOT NULL, "profileType" "public"."profile_collection_profiletype_enum" NOT NULL, "isAdmin" boolean NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "profileTypeId" bigint NOT NULL, "userId" bigint NOT NULL, CONSTRAINT "PK_e5d01864c4c3af52721b886fe83" PRIMARY KEY ("id"))
+[2024-02-14T12:08:28.983Z][QUERY ERROR]: error: relation "profile_collection" already exists
+[2024-02-14T12:08:28.984Z]Migration "Sh1707912497222" failed, error: relation "profile_collection" already exists
+[2024-02-14T12:08:28.984Z][QUERY]: ROLLBACK
+[2024-02-14T12:12:45.662Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-14T12:12:45.663Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-14T12:12:46.487Z][QUERY]: SELECT version();
+[2024-02-14T12:12:46.499Z][QUERY]: SELECT version();
+[2024-02-14T12:12:46.501Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-14T12:12:46.506Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-14T12:12:46.507Z]0 migrations are already loaded in the database.
+[2024-02-14T12:12:46.507Z]1 migrations were found in the source code.
+[2024-02-14T12:12:46.507Z]1 migrations are new migrations must be executed.
+[2024-02-14T12:12:46.507Z][QUERY]: START TRANSACTION
+[2024-02-14T12:12:46.508Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "totalPrice" numeric NOT NULL DEFAULT '0', "totalItems" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" bigint NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-14T12:12:46.517Z][QUERY]: CREATE TABLE "cart_product" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, "quantity" integer NOT NULL, "price" numeric NOT NULL, "image" character varying NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updateAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_f3196199c74660974cd827c0d0b" PRIMARY KEY ("cartId", "productId"))
+[2024-02-14T12:12:46.525Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, "description" character varying NOT NULL, "brand" character varying NOT NULL, "price" numeric NOT NULL, "tag" character varying, "stockQuantity" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-14T12:12:46.533Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "email" character varying NOT NULL, "password" character varying NOT NULL, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-14T12:12:46.541Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL DEFAULT false, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, "paymentStatus" "public"."order_paymentstatus_enum" NOT NULL, "cartId" bigint NOT NULL, CONSTRAINT "REL_fe3963d525b2ee03ba471953a7" UNIQUE ("cartId"), CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-14T12:12:46.549Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_139f8024067696fe5a8400ebda2" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T12:12:46.551Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_4f1b0c66f4e0b4610e14ca42e5c" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T12:12:46.552Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-14T12:12:46.553Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-14T12:12:46.563Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1707912755460,"Sh1707912755460"]
+[2024-02-14T12:12:46.565Z]Migration Sh1707912755460 has been  executed successfully.
+[2024-02-14T12:12:46.565Z][QUERY]: COMMIT
+[2024-02-14T14:04:02.642Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["sony"]
+[2024-02-14T14:04:02.643Z][QUERY ERROR]: error: invalid input syntax for type bigint: "sony"
+[2024-02-14T14:04:45.538Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["\"Sony\""]
+[2024-02-14T14:04:45.538Z][QUERY ERROR]: error: invalid input syntax for type bigint: ""Sony""
+[2024-02-14T14:16:04.615Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-14T14:16:04.615Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-14T14:23:45.386Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: [":search"]
+[2024-02-14T14:23:45.387Z][QUERY ERROR]: error: invalid input syntax for type bigint: ":search"
+[2024-02-14T14:24:35.838Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["brand"]
+[2024-02-14T14:24:35.838Z][QUERY ERROR]: error: invalid input syntax for type bigint: "brand"
+[2024-02-14T14:27:14.736Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["brand"]
+[2024-02-14T14:27:14.736Z][QUERY ERROR]: error: invalid input syntax for type bigint: "brand"
+[2024-02-15T06:21:49.088Z][FAILED QUERY]: INSERT INTO "cart_product"("cartId", "productId", "quantity", "price", "image", "createdAt", "updateAt") VALUES (DEFAULT, $1, $2, $3, $4, DEFAULT, DEFAULT) RETURNING "createdAt", "updateAt" -- PARAMETERS: ["1",5,120,"URL"]
+[2024-02-15T06:21:49.088Z][QUERY ERROR]: error: null value in column "cartId" of relation "cart_product" violates not-null constraint
+[2024-02-19T14:53:30.043Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-19T14:53:30.049Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-19T14:53:30.973Z][QUERY]: SELECT version();
+[2024-02-19T14:53:30.975Z][QUERY]: SELECT version();
+[2024-02-19T14:53:30.976Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-19T14:53:30.982Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-19T14:53:31.024Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-19T14:53:31.026Z]0 migrations are already loaded in the database.
+[2024-02-19T14:53:31.026Z]1 migrations were found in the source code.
+[2024-02-19T14:53:31.026Z]1 migrations are new migrations must be executed.
+[2024-02-19T14:53:31.026Z][QUERY]: START TRANSACTION
+[2024-02-19T14:53:31.027Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "totalPrice" numeric NOT NULL DEFAULT '0', "totalItems" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" bigint NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-19T14:53:31.040Z][QUERY]: CREATE TABLE "cart_product" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, "quantity" integer NOT NULL, "price" numeric NOT NULL, "image" character varying NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updateAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_f3196199c74660974cd827c0d0b" PRIMARY KEY ("cartId", "productId"))
+[2024-02-19T14:53:31.050Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, "description" character varying NOT NULL, "brand" character varying NOT NULL, "price" numeric NOT NULL, "tag" character varying, "stockQuantity" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-19T14:53:31.061Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "email" character varying NOT NULL, "password" character varying NOT NULL, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-19T14:53:31.071Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL DEFAULT false, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, "paymentStatus" "public"."order_paymentstatus_enum" NOT NULL, "cartId" bigint NOT NULL, "userId" bigint, CONSTRAINT "REL_fe3963d525b2ee03ba471953a7" UNIQUE ("cartId"), CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-19T14:53:31.081Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_139f8024067696fe5a8400ebda2" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-19T14:53:31.086Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_4f1b0c66f4e0b4610e14ca42e5c" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-19T14:53:31.087Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-19T14:53:31.088Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_caabe91507b3379c7ba73637b84" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+[2024-02-19T14:53:31.089Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-19T14:53:31.101Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1708354371783,"Sh1708354371783"]
+[2024-02-19T14:53:31.103Z]Migration Sh1708354371783 has been  executed successfully.
+[2024-02-19T14:53:31.104Z][QUERY]: COMMIT
+[2024-02-19T14:57:41.166Z][FAILED QUERY]: INSERT INTO "cart_product"("cartId", "productId", "quantity", "price", "image", "createdAt", "updateAt") VALUES ($1, $2, $3, $4, $5, DEFAULT, DEFAULT), ($6, $7, $8, $9, $10, DEFAULT, DEFAULT) RETURNING "createdAt", "updateAt" -- PARAMETERS: ["1","1",3,"55","new image","1","1",2,"55","new image"]
+[2024-02-19T14:57:41.166Z][QUERY ERROR]: error: duplicate key value violates unique constraint "PK_f3196199c74660974cd827c0d0b"
+[2024-02-21T09:46:21.280Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-21T09:46:21.286Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-21T09:46:22.770Z][QUERY]: SELECT version();
+[2024-02-21T09:46:22.787Z][QUERY]: SELECT version();
+[2024-02-21T09:46:22.790Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-21T09:46:22.796Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-21T09:46:22.828Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-21T09:46:22.830Z]0 migrations are already loaded in the database.
+[2024-02-21T09:46:22.830Z]1 migrations were found in the source code.
+[2024-02-21T09:46:22.830Z]1 migrations are new migrations must be executed.
+[2024-02-21T09:46:22.830Z][QUERY]: START TRANSACTION
+[2024-02-21T09:46:22.832Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "totalPrice" numeric NOT NULL DEFAULT '0', "totalItems" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" bigint NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-21T09:46:22.845Z][QUERY]: CREATE TABLE "cart_product" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, "quantity" integer NOT NULL, "price" numeric NOT NULL, "image" character varying NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updateAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_f3196199c74660974cd827c0d0b" PRIMARY KEY ("cartId", "productId"))
+[2024-02-21T09:46:22.860Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, "description" character varying NOT NULL, "brand" character varying NOT NULL, "price" numeric NOT NULL, "tag" character varying, "stockQuantity" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-21T09:46:22.874Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "email" character varying NOT NULL, "password" character varying NOT NULL, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-21T09:46:22.886Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL DEFAULT false, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, "paymentStatus" "public"."order_paymentstatus_enum" NOT NULL, "cartId" bigint NOT NULL, "userId" bigint, CONSTRAINT "REL_fe3963d525b2ee03ba471953a7" UNIQUE ("cartId"), CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-21T09:46:22.902Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_139f8024067696fe5a8400ebda2" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-21T09:46:22.909Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_4f1b0c66f4e0b4610e14ca42e5c" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-21T09:46:22.912Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-21T09:46:22.915Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_caabe91507b3379c7ba73637b84" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+[2024-02-21T09:46:22.918Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-21T09:46:22.940Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1708508766926,"Sh1708508766926"]
+[2024-02-21T09:46:22.946Z]Migration Sh1708508766926 has been  executed successfully.
+[2024-02-21T09:46:22.946Z][QUERY]: COMMIT
+[2024-02-21T10:30:57.437Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["brand"]
+[2024-02-21T10:30:57.437Z][QUERY ERROR]: error: invalid input syntax for type bigint: "brand"
+[2024-02-21T11:06:58.606Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-21T11:06:58.606Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-21T11:07:58.130Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-21T11:07:58.130Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-21T11:09:18.554Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-21T11:09:18.555Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-21T18:56:43.656Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-21T18:56:43.657Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-21T18:57:53.038Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-21T18:57:53.038Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-21T18:58:45.294Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-21T18:58:45.294Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T08:20:22.348Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T08:20:22.350Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T08:57:21.657Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T08:57:21.657Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T09:09:18.708Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T09:09:18.709Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T09:10:59.727Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T09:10:59.727Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T09:26:49.109Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T09:26:49.109Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T09:28:16.559Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T09:28:16.560Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T09:28:21.953Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T09:28:21.953Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T09:31:54.825Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T09:31:54.826Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T09:48:29.748Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T09:48:29.748Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T11:39:57.365Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T11:39:57.365Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T11:40:34.602Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["find"]
+[2024-02-22T11:40:34.602Z][QUERY ERROR]: error: invalid input syntax for type bigint: "find"
+[2024-02-22T11:41:55.186Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["searchQuery"]
+[2024-02-22T11:41:55.186Z][QUERY ERROR]: error: invalid input syntax for type bigint: "searchQuery"
+[2024-02-22T12:13:03.024Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T12:13:03.024Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T12:57:57.846Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T12:57:57.847Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T12:59:57.365Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T12:59:57.365Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T13:03:04.946Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T13:03:04.946Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T13:18:05.691Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T13:18:05.691Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T13:22:25.016Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T13:22:25.016Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T13:23:17.887Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T13:23:17.888Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T13:24:02.932Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T13:24:02.932Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T13:30:45.834Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T13:30:45.835Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T13:36:46.443Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["search"]
+[2024-02-22T13:36:46.443Z][QUERY ERROR]: error: invalid input syntax for type bigint: "search"
+[2024-02-22T13:51:29.339Z][FAILED QUERY]: SELECT "product"."id" AS "product_id", "product"."name" AS "product_name", "product"."description" AS "product_description", "product"."brand" AS "product_brand", "product"."price" AS "product_price", "product"."tag" AS "product_tag", "product"."stockQuantity" AS "product_stockQuantity", "product"."productCategory" AS "product_productCategory" FROM "product" "product" WHERE (LOWER("product"."name") LIKE LOWER($1) OR LOWER("product"."brand") LIKE LOWER($1) OR LOWER("product"."productCategory") LIKE LOWER($1)) -- PARAMETERS: ["%Sony%"]
+[2024-02-22T13:51:29.339Z][QUERY ERROR]: error: function lower(product_productcategory_enum) does not exist
+[2024-02-22T16:15:04.919Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (((("Product"."name" ILIKE $1))) OR ((("Product"."brand" ILIKE $2))) OR ((("Product"."tag" ILIKE $3))) OR ((("Product"."productCategory" = $4)))) -- PARAMETERS: ["%Nike%","%Nike%","%Nike%","Nike"]
+[2024-02-22T16:15:04.922Z][QUERY ERROR]: error: invalid input value for enum product_productcategory_enum: "Nike"
+[2024-02-25T08:33:20.564Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-25T08:33:20.571Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-25T08:33:22.138Z][QUERY]: SELECT version();
+[2024-02-25T08:33:22.142Z][QUERY]: SELECT version();
+[2024-02-25T08:33:22.144Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-25T08:33:22.151Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-25T08:33:22.197Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-25T08:33:22.199Z]0 migrations are already loaded in the database.
+[2024-02-25T08:33:22.199Z]1 migrations were found in the source code.
+[2024-02-25T08:33:22.199Z]1 migrations are new migrations must be executed.
+[2024-02-25T08:33:22.199Z][QUERY]: START TRANSACTION
+[2024-02-25T08:33:22.200Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "totalPrice" numeric NOT NULL DEFAULT '0', "totalItems" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" bigint NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-25T08:33:22.219Z][QUERY]: CREATE TABLE "cart_product" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, "quantity" integer NOT NULL, "price" numeric NOT NULL, "image" character varying NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updateAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_f3196199c74660974cd827c0d0b" PRIMARY KEY ("cartId", "productId"))
+[2024-02-25T08:33:22.236Z][QUERY]: CREATE TABLE "product_details" ("id" bigint NOT NULL, "specification" character varying, "colour" character varying, "size" bigint, "weight" bigint, CONSTRAINT "PK_a3fa8e2e94f3c37a8d731451de4" PRIMARY KEY ("id"))
+[2024-02-25T08:33:22.254Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, "description" character varying NOT NULL, "brand" character varying NOT NULL, "price" numeric NOT NULL, "tag" character varying, "stockQuantity" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-25T08:33:22.283Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "email" character varying NOT NULL, "password" character varying NOT NULL, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-25T08:33:22.306Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL DEFAULT false, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, "paymentStatus" "public"."order_paymentstatus_enum" NOT NULL, "cartId" bigint NOT NULL, "userId" bigint, CONSTRAINT "REL_fe3963d525b2ee03ba471953a7" UNIQUE ("cartId"), CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-25T08:33:22.332Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_139f8024067696fe5a8400ebda2" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-25T08:33:22.343Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_4f1b0c66f4e0b4610e14ca42e5c" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-25T08:33:22.347Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-25T08:33:22.350Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_caabe91507b3379c7ba73637b84" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+[2024-02-25T08:33:22.355Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-25T08:33:22.385Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1708849976196,"Sh1708849976196"]
+[2024-02-25T08:33:22.392Z]Migration Sh1708849976196 has been  executed successfully.
+[2024-02-25T08:33:22.393Z][QUERY]: COMMIT
+[2024-02-25T16:39:21.167Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (((("Product"."name" ILIKE $1))) OR ((("Product"."brand" ILIKE $2))) OR ((("Product"."tag" ILIKE $3))) OR ((("Product"."productCategory" = $4)))) -- PARAMETERS: ["%Mac%","%Mac%","%Mac%","Mac"]
+[2024-02-25T16:39:21.167Z][QUERY ERROR]: error: invalid input value for enum product_productcategory_enum: "Mac"
+[2024-02-25T16:40:33.391Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (((("Product"."name" ILIKE $1))) OR ((("Product"."brand" ILIKE $2))) OR ((("Product"."tag" ILIKE $3))) OR ((("Product"."productCategory" = $4)))) -- PARAMETERS: ["%tag 11%","%tag 11%","%tag 11%","tag 11"]
+[2024-02-25T16:40:33.391Z][QUERY ERROR]: error: invalid input value for enum product_productcategory_enum: "tag 11"
+[2024-02-25T16:41:40.120Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (((("Product"."name" ILIKE $1))) OR ((("Product"."brand" ILIKE $2))) OR ((("Product"."tag" ILIKE $3))) OR ((("Product"."productCategory" = $4)))) -- PARAMETERS: ["%Get Rich or Die trying%","%Get Rich or Die trying%","%Get Rich or Die trying%","Get Rich or Die trying"]
+[2024-02-25T16:41:40.120Z][QUERY ERROR]: error: invalid input value for enum product_productcategory_enum: "Get Rich or Die trying"
+[2024-02-25T16:43:21.105Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (((("Product"."name" ILIKE $1))) OR ((("Product"."brand" ILIKE $2))) OR ((("Product"."tag" ILIKE $3))) OR ((("Product"."productCategory" = $4)))) -- PARAMETERS: ["%Novel%","%Novel%","%Novel%","Novel"]
+[2024-02-25T16:43:21.105Z][QUERY ERROR]: error: invalid input value for enum product_productcategory_enum: "Novel"
+[2024-02-26T08:15:05.541Z][FAILED QUERY]: INSERT INTO "product_details"("id", "specification", "colour", "size", "weight") VALUES (DEFAULT, $1, $2, $3, $4) -- PARAMETERS: ["Sony PlayStation 5","fast loading with large memory",12,24]
+[2024-02-26T08:15:05.541Z][QUERY ERROR]: error: null value in column "id" of relation "product_details" violates not-null constraint
+[2024-02-26T11:00:04.578Z][FAILED QUERY]: SELECT "Product"."id" AS "Product_id", "Product"."name" AS "Product_name", "Product"."description" AS "Product_description", "Product"."brand" AS "Product_brand", "Product"."price" AS "Product_price", "Product"."tag" AS "Product_tag", "Product"."stockQuantity" AS "Product_stockQuantity", "Product"."productCategory" AS "Product_productCategory" FROM "product" "Product" WHERE (("Product"."id" = $1)) LIMIT 1 -- PARAMETERS: ["2"]
+[2024-02-26T11:00:04.579Z][QUERY ERROR]: error: relation "product" does not exist
+[2024-02-26T11:00:58.638Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-26T11:00:58.640Z][QUERY]: SELECT * FROM current_schema()
+[2024-02-26T11:00:59.490Z][QUERY]: SELECT version();
+[2024-02-26T11:00:59.492Z][QUERY]: SELECT version();
+[2024-02-26T11:00:59.493Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-02-26T11:00:59.499Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-02-26T11:00:59.530Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-02-26T11:00:59.531Z]0 migrations are already loaded in the database.
+[2024-02-26T11:00:59.532Z]1 migrations were found in the source code.
+[2024-02-26T11:00:59.532Z]1 migrations are new migrations must be executed.
+[2024-02-26T11:00:59.532Z][QUERY]: START TRANSACTION
+[2024-02-26T11:00:59.533Z][QUERY]: CREATE TABLE "cart" ("id" BIGSERIAL NOT NULL, "totalPrice" numeric NOT NULL DEFAULT '0', "totalItems" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" bigint NOT NULL, CONSTRAINT "PK_c524ec48751b9b5bcfbf6e59be7" PRIMARY KEY ("id"))
+[2024-02-26T11:00:59.548Z][QUERY]: CREATE TABLE "cart_product" ("cartId" bigint NOT NULL, "productId" bigint NOT NULL, "quantity" integer NOT NULL, "price" numeric NOT NULL, "image" character varying NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updateAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_f3196199c74660974cd827c0d0b" PRIMARY KEY ("cartId", "productId"))
+[2024-02-26T11:00:59.557Z][QUERY]: CREATE TABLE "product" ("id" BIGSERIAL NOT NULL, "name" character varying NOT NULL, "description" character varying NOT NULL, "brand" character varying NOT NULL, "price" numeric NOT NULL, "tag" character varying, "stockQuantity" integer, "productCategory" "public"."product_productcategory_enum" NOT NULL, CONSTRAINT "PK_bebc9158e480b949565b4dc7a82" PRIMARY KEY ("id"))
+[2024-02-26T11:00:59.566Z][QUERY]: CREATE TABLE "user" ("id" BIGSERIAL NOT NULL, "firstName" character varying NOT NULL, "lastName" character varying NOT NULL, "email" character varying NOT NULL, "password" character varying NOT NULL, CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-02-26T11:00:59.577Z][QUERY]: CREATE TABLE "order" ("id" BIGSERIAL NOT NULL, "isPaid" boolean NOT NULL DEFAULT false, "orderDate" date NOT NULL, "deliveryStatus" "public"."order_deliverystatus_enum" NOT NULL, "paymentStatus" "public"."order_paymentstatus_enum" NOT NULL, "cartId" bigint NOT NULL, "userId" bigint, CONSTRAINT "REL_fe3963d525b2ee03ba471953a7" UNIQUE ("cartId"), CONSTRAINT "PK_1031171c13130102495201e3e20" PRIMARY KEY ("id"))
+[2024-02-26T11:00:59.589Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_139f8024067696fe5a8400ebda2" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-26T11:00:59.594Z][QUERY]: ALTER TABLE "cart_product" ADD CONSTRAINT "FK_4f1b0c66f4e0b4610e14ca42e5c" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-26T11:00:59.595Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_fe3963d525b2ee03ba471953a7c" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-02-26T11:00:59.596Z][QUERY]: ALTER TABLE "order" ADD CONSTRAINT "FK_caabe91507b3379c7ba73637b84" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+[2024-02-26T11:00:59.598Z][QUERY]: CREATE TABLE "typeorm_cache_table" ("id" SERIAL NOT NULL, "identifier" character varying, "time" bigint NOT NULL, "duration" integer NOT NULL, "query" text NOT NULL, "result" text NOT NULL, CONSTRAINT "PK_1f1c066da68820c20a4ff873df1" PRIMARY KEY ("id"))
+[2024-02-26T11:00:59.610Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1708945246353,"Sh1708945246353"]
+[2024-02-26T11:00:59.612Z]Migration Sh1708945246353 has been  executed successfully.
+[2024-02-26T11:00:59.612Z][QUERY]: COMMIT

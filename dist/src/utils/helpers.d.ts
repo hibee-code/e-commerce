@@ -1,0 +1,10 @@
+import Hashids from 'hashids';
+export declare function createObject<T>(propsValues?: Partial<T>): T;
+export declare function getConstructor<T>(propsValues?: Partial<T>): new () => T;
+export declare function trimObject(propsValues: Record<string, any>, propsToDelete: string[]): Record<string, any>;
+export declare const encoder: Hashids;
+export declare const encodeId: (id: string) => string;
+export declare const decodeId: (hash: string) => string | false;
+export declare const throwBadRequest: (message: string) => never;
+export declare const throwForbidden: (message: string) => never;
+export declare const throwUnathorized: (message: string) => never;
