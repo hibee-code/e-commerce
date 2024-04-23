@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, ILike } from 'typeorm';
 import { ProductDto } from './dto/product.dto';
 import { Product } from './entities/product.entity';
-import { WhereClause } from 'typeorm/query-builder/WhereClause';
+//import { WhereClause } from 'typeorm/query-builder/WhereClause';
 
 @Injectable()
 export class ProductService {
